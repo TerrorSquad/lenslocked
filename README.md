@@ -13,5 +13,13 @@ You will need to have Go installed on your machine. You can find instructions on
 To install the application run the following command in your terminal:
 
 ```
-go get github.com/terrorsquad/lenslocked
+go install github.com/terrorsquad/lenslocked@latest
+```
+
+### Running the application
+
+To run the application run the following command in your terminal:
+
+```
+lenslocked
 ```
