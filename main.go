@@ -5,6 +5,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"html/template"
+	"log"
 	"net/http"
 )
 
@@ -12,11 +13,15 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	tmp, err := template.ParseFiles("templates/home.gohtml")
 	if err != nil {
-		panic(err) // TODO: Remove the panic
+		log.Printf("Error parsing template: %v", err)
+		http.Error(w, "There was an error parsing the template", http.StatusInternalServerError)
+		return
 	}
 	err = tmp.Execute(w, nil)
 	if err != nil {
-		panic(err) // TODO: Remove the panic
+		log.Printf("Error executing template: %v", err)
+		http.Error(w, "There was an error executing the template", http.StatusInternalServerError)
+		return
 	}
 }
 
