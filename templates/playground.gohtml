@@ -1,0 +1,56 @@
+<h1>Welcome to the playground</h1>
+
+<p>Below are three exercises and their solutions.</p>
+
+<h2>Exercise 1</h2>
+<p>Add new fields, and then show in the html template</p>
+<p>Create a User struct with the following fields and render all the User data in the template below</p>
+<pre>
+type User struct {
+    Name string
+    Age int
+    Email string
+    MetaData {
+        Address string
+        Phone string
+    }
+}
+</pre>
+
+<h3>Solution:</h3>
+<div>
+    <p>Name: {{ .User.Name }}</p>
+    <p>Age: {{ .User.Age }}</p>
+    <p>Email: {{ .User.Email }}</p>
+    <p>Address: {{ .User.MetaData.Address }}</p>
+    <p>Phone: {{ .User.MetaData.Phone }}</p>
+</div>
+
+<h2>Exercise 2</h2>
+<p>Experiment with different data types:</p>
+<ul style="list-style: none">
+    <li>integers</li>
+    <li>floats</li>
+    <li>maps</li>
+    <li>slices</li>
+</ul>
+
+<h3>Solution:</h3>
+<div>
+    <p>Integer: {{ .Integer }}</p>
+    <p>Float: {{ .Float }}</p>
+    <p>Map: {{ .Map }}</p>
+    <p>Slice: {{ .Slice }}</p>
+</div>
+
+<h2>Exercise 3</h2>
+<p>Use an if/else statement in the template</p>
+
+<h3>Solution:</h3>
+<div>
+    {{ if .User.Name }}
+        <p>Name: {{ .User.Name }}</p>
+    {{ else }}
+        <p>Name: No name provided</p>
+    {{ end }}
+</div>
