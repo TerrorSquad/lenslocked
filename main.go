@@ -4,93 +4,36 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/terrorsquad/lenslocked/controllers"
 	"github.com/terrorsquad/lenslocked/views"
-	"log"
 	"net/http"
 	"path/filepath"
 )
 
-func executeTemplate(w http.ResponseWriter, filepath string, data interface{}) {
-	viewTemplate, err := views.Parse(filepath)
-	if err != nil {
-		log.Printf("error parsing template: %v", err)
-		http.Error(w, "There was an error processing this page", http.StatusInternalServerError)
-		return
-	}
-	viewTemplate.Execute(w, data)
-}
-
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	executeTemplate(w, filepath.Join("templates", "home.gohtml"), nil)
-}
-
-func contactHandler(w http.ResponseWriter, r *http.Request) {
-	executeTemplate(w, filepath.Join("templates", "contact.gohtml"), nil)
-}
-
-func faqHandler(w http.ResponseWriter, r *http.Request) {
-	executeTemplate(w, filepath.Join("templates", "faq.gohtml"), nil)
-}
-
-type MetaData struct {
-	Address string
-	Phone   string
-}
-type User struct {
-	Name     string
-	Age      int
-	Email    string
-	MetaData MetaData
-}
-type Data struct {
-	User    User
-	Integer int
-	Float   float64
-	Bool    bool
-	Map     map[string]string
-	Slice   []string
-}
-
-func playgroundHandler(w http.ResponseWriter, r *http.Request) {
-
-	var userData = User{
-		Name:  "John Doe",
-		Age:   30,
-		Email: "john.doe@example.com",
-		MetaData: MetaData{
-			Address: "Hollywood Boulevard 42",
-			Phone:   "555-1234-5678",
-		},
-	}
-
-	var data = Data{
-		User:    userData,
-		Integer: 42,
-		Float:   3.14,
-		Bool:    true,
-		Map: map[string]string{
-			"key1": "value1",
-			"key2": "value2",
-		},
-		Slice: []string{"a", "b", "c"},
-	}
-
-	executeTemplate(w, filepath.Join("templates", "playground.gohtml"), data)
-}
-
 func main() {
-	router := setupRouter()
-	http.ListenAndServe("localhost:3000", router)
-	fmt.Println("Server is running on port 3000")
-}
-
-func setupRouter() *chi.Mux {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
-	router.Get("/", homeHandler)
-	router.Get("/contact", contactHandler)
-	router.Get("/faq", faqHandler)
-	router.Get("/playground", playgroundHandler)
+
+	tpl, err := views.Parse(filepath.Join("templates", "home.gohtml"))
+	if err != nil {
+		panic(err)
+	}
+	router.Get("/", controllers.StaticHandler(tpl, nil))
+
+	tpl, err = views.Parse(filepath.Join("templates", "contact.gohtml"))
+	if err != nil {
+		panic(err)
+	}
+	router.Get("/contact", controllers.StaticHandler(tpl, nil))
+
+	tpl, err = views.Parse(filepath.Join("templates", "faq.gohtml"))
+	if err != nil {
+		panic(err)
+	}
+	router.Get("/faq", controllers.StaticHandler(tpl, nil))
+
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
-	return router
+
+	http.ListenAndServe("localhost:3000", router)
+	fmt.Println("Server is running on port 3000")
 }
