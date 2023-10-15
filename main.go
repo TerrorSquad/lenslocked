@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"net/http"
 )
 
@@ -20,24 +21,12 @@ func faqHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<p>FAQ page</p>")
 }
 
-type Router struct{}
-
-func (router Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch r.URL.Path {
-	case "/":
-		homeHandler(w, r)
-		break
-	case "/contact":
-		contactHandler(w, r)
-		break
-	case "/faq":
-		faqHandler(w, r)
-	default:
-		http.NotFound(w, r)
-	}
-}
-
 func main() {
-	http.ListenAndServe("localhost:3000", Router{})
+	router := chi.NewRouter()
+	router.Get("/", homeHandler)
+	router.Get("/contact", contactHandler)
+	router.Get("/faq", faqHandler)
+	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
+	http.ListenAndServe("localhost:3000", router)
 	fmt.Println("Server is running on port 3000")
 }
