@@ -22,11 +22,16 @@ func faqHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	router := setupRouter()
+	http.ListenAndServe("localhost:3000", router)
+	fmt.Println("Server is running on port 3000")
+}
+
+func setupRouter() *chi.Mux {
 	router := chi.NewRouter()
 	router.Get("/", homeHandler)
 	router.Get("/contact", contactHandler)
 	router.Get("/faq", faqHandler)
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
-	http.ListenAndServe("localhost:3000", router)
-	fmt.Println("Server is running on port 3000")
+	return router
 }
