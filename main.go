@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"net/http"
 )
 
@@ -21,6 +22,11 @@ func faqHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<p>FAQ page</p>")
 }
 
+func urlParametersHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	fmt.Fprintf(w, "<p>URL parameter: %s</p>", chi.URLParam(r, "id"))
+}
+
 func main() {
 	router := setupRouter()
 	http.ListenAndServe("localhost:3000", router)
@@ -29,9 +35,11 @@ func main() {
 
 func setupRouter() *chi.Mux {
 	router := chi.NewRouter()
+	router.Use(middleware.Logger)
 	router.Get("/", homeHandler)
 	router.Get("/contact", contactHandler)
 	router.Get("/faq", faqHandler)
+	router.Get("/url-parameters/{id}", urlParametersHandler)
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
 	return router
 }
