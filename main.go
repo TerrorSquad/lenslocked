@@ -22,7 +22,7 @@ func main() {
 	router.Get("/contact", controllers.StaticHandler(tpl, nil))
 
 	tpl = views.Must(views.ParseFS(templates.FS, "faq.gohtml"))
-	router.Get("/faq", controllers.StaticHandler(tpl, nil))
+	router.Get("/faq", controllers.FAQ(tpl))
 
 	tpl = views.Must(views.ParseFS(templates.FS, "dummy.gohtml"))
 	router.Get("/dummy", controllers.StaticHandler(tpl, struct {

@@ -1,16 +1,23 @@
 <h1>FAQ:</h1>
 
 <ul>
-    <li>
-        <p style="font-weight: bold">What is Lenslocked?</p>
-        <p>Lenslocked is a fictional photo sharing website created by Mat Ryer and Jon Calhoun for the book <a href="https://www.usegolang.com/">Use Go to Build Web Applications</a>.</p>
-    </li>
-    <li>
-        <p style="font-weight: bold">Why did you create this?</p>
-        <p>Mat Ryer and Jon Calhoun created this website to teach people how to build web applications with Go.</p>
-    </li>
-    <li>
-        <p style="font-weight: bold">Is this website real?</p>
-        <p>No, this website is not real. It is a fictional website created for the book <a href="https://www.usegolang.com/">Use Go to Build Web Applications</a>.</p>
-    </li>
+    {{/* Inline code without a template */}}
+    {{ range . }}
+        <li>
+            <p>{{ .Question }}</p>
+            <p>{{ .Answer }}</p>
+        </li>
+    {{ end }}
+
+    {{/* Use a template called qa and pass data to it */}}
+    {{ range . }}
+        {{ template "qa" . }}
+    {{ end }}
 </ul>
+
+{{define "qa"}}
+    <li>
+        <p><strong>{{ .Question }}</strong></p>
+        <p>{{ .Answer }}</p>
+    </li>
+{{end}}
