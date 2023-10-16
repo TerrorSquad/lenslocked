@@ -15,16 +15,16 @@ func main() {
 	router.Use(middleware.Logger)
 	var tpl views.Template
 
-	tpl = views.Must(views.ParseFS(templates.FS, "home.gohtml"))
+	tpl = views.Must(views.ParseFS(templates.FS, "layout-page.gohtml", "home.gohtml"))
 	router.Get("/", controllers.StaticHandler(tpl, nil))
 
-	tpl = views.Must(views.ParseFS(templates.FS, "contact.gohtml"))
+	tpl = views.Must(views.ParseFS(templates.FS, "layout-page.gohtml", "contact.gohtml"))
 	router.Get("/contact", controllers.StaticHandler(tpl, nil))
 
-	tpl = views.Must(views.ParseFS(templates.FS, "faq.gohtml"))
+	tpl = views.Must(views.ParseFS(templates.FS, "layout-page.gohtml", "faq.gohtml"))
 	router.Get("/faq", controllers.FAQ(tpl))
 
-	tpl = views.Must(views.ParseFS(templates.FS, "dummy.gohtml"))
+	tpl = views.Must(views.ParseFS(templates.FS, "layout-page.gohtml", "dummy.gohtml"))
 	router.Get("/dummy", controllers.StaticHandler(tpl, struct {
 		DummyData string
 	}{

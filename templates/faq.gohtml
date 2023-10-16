@@ -1,3 +1,4 @@
+{{ define "page" }}
 <h1>FAQ:</h1>
 
 <ul>
@@ -14,7 +15,9 @@
         {{ template "qa" . }}
     {{ end }}
 </ul>
+{{ end }}
 
+{{/*    Nested template definitions are not supported*/}}
 {{define "qa"}}
     <li>
         <p><strong>{{ .Question }}</strong></p>
