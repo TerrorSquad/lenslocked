@@ -7,7 +7,9 @@ import (
 	"github.com/terrorsquad/lenslocked/controllers"
 	"github.com/terrorsquad/lenslocked/templates"
 	"github.com/terrorsquad/lenslocked/views"
+	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -35,6 +37,17 @@ func main() {
 
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
 
-	fmt.Println("Server is running on port 3000")
-	http.ListenAndServe("localhost:3000", router)
+	PORT := os.Getenv("PORT")
+	if PORT == "" {
+		PORT = "8080"
+	}
+
+	address := ""
+	if os.Getenv("OS") == "macos" {
+		address = "localhost"
+	}
+
+	fmt.Println("Server is running on port: " + PORT)
+	log.Println("Server is running on port: " + PORT)
+	log.Fatal(http.ListenAndServe(address+":"+PORT, router))
 }
