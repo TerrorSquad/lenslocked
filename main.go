@@ -24,6 +24,13 @@ func main() {
 	tpl = views.Must(views.Parse(filepath.Join("templates", "faq.gohtml")))
 	router.Get("/faq", controllers.StaticHandler(tpl, nil))
 
+	tpl = views.Must(views.Parse(filepath.Join("templates", "dummy.gohtml")))
+	router.Get("/dummy", controllers.StaticHandler(tpl, struct {
+		DummyData string
+	}{
+		DummyData: "Lorem ipsum dolor sit amet",
+	}))
+
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
 
 	http.ListenAndServe("localhost:3000", router)
