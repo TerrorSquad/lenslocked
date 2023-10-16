@@ -1,20 +1,29 @@
 {{define "page"}}
+    <div class="py-12 flex justify-center">
+        <div class="px-8 py-8 bg-white rounded shadow">
+            <h1 class="text-3xl text-center font-bold text-gray-700 pt-4 pb-5">Sign up</h1>
+            <p class="text-semibold p-2 text center text-gray-500">Start sharing your photos today</p>
+            <form method="POST" action="/signup" class="flex flex-col mx-auto pt-4">
 
-    <form method="POST" action="/signup" class="flex flex-col mx-auto pt-4">
-        <h1 class="text-3xl">Sign up</h1>
+                <div class="mt-8 flex flex-col">
+                    <label for="email" class="text-lg font-semibold">Email</label>
+                    <input class="px-2 py-1 border-b border-blue-100 align-middle" id="email" name="email" type="email" placeholder="email" required autocomplete="email">
+                </div>
+                <div class="mt-8 flex flex-col">
+                    <label for="password" class="text-lg font-semibold">Password</label>
+                    <input class="px-2 py-1 border-b border-blue-100 text-start align-middle" id="password" name="password" type="password" placeholder="********">
+                </div>
+                <div class="mt-8">
+                    <button class="bg-blue-500 hover:bg-blue-700 p-2 rounded text-lg text-white w-full" type="submit">Sign up</button>
+                </div>
 
-        <div class="mt-8 flex flex-col">
-            <label for="email" class="text-lg">Email</label>
-            <input class="px-2 py-1 border-b border-blue-100 align-middle" id="email" name="email" type="email" placeholder="email" required autocomplete="email">
-        </div>
-        <div class="mt-8 flex flex-col">
-            <label for="password" class="text-lg">Password</label>
-            <input class="px-2 py-1 border-b border-blue-100 text-start align-middle" id="password" name="password" type="password" placeholder="********">
-        </div>
-        <div class="mt-8 flex">
-            <button class="bg-blue-500 hover:bg-blue-700 p-2 rounded text-lg text-white flex-grow" type="submit">Sign up</button>
-        </div>
+                <div class="py-2 w-full flex flex-col justify-between gap-4">
+                    <p class="text-xs text-gray-500">Already have an account? <a class="underline" href="/signin">Sign in</a></p>
+                    <p class="text-xs text-gray-500"><a class="underline" href="/reset-pw">Forgot password</a></p>
+                </div>
 
-    </form>
+            </form>
+        </div>
+    </div>
 
 {{end}}
