@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 )
 
 func main() {
@@ -43,7 +44,7 @@ func main() {
 	}
 
 	address := ""
-	if os.Getenv("OS") == "macos" {
+	if runtime.GOOS == "darwin" {
 		address = "localhost"
 	}
 
