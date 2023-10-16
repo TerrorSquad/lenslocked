@@ -18,18 +18,18 @@ func main() {
 	router.Use(middleware.Logger)
 	var tpl views.Template
 
-	var baseLayouts = []string{"layout-page.gohtml", "layout-page-tailwind.gohtml"}
+	var baseLayouts = []string{"layouts/layout-page.gohtml", "layouts/layout-page-tailwind.gohtml"}
 
-	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "home.gohtml")...))
+	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/home.gohtml")...))
 	router.Get("/", controllers.StaticHandler(tpl, nil))
 
-	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "contact.gohtml")...))
+	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/contact.gohtml")...))
 	router.Get("/contact", controllers.StaticHandler(tpl, nil))
 
-	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "faq.gohtml")...))
+	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/faq.gohtml")...))
 	router.Get("/faq", controllers.FAQ(tpl))
 
-	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "dummy.gohtml")...))
+	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/dummy.gohtml")...))
 	router.Get("/dummy", controllers.StaticHandler(tpl, struct {
 		DummyData string
 	}{
