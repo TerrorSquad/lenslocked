@@ -5,9 +5,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/terrorsquad/lenslocked/controllers"
+	"github.com/terrorsquad/lenslocked/templates"
 	"github.com/terrorsquad/lenslocked/views"
 	"net/http"
-	"path/filepath"
 )
 
 func main() {
@@ -15,16 +15,16 @@ func main() {
 	router.Use(middleware.Logger)
 	var tpl views.Template
 
-	tpl = views.Must(views.Parse(filepath.Join("templates", "home.gohtml")))
+	tpl = views.Must(views.ParseFS(templates.FS, "home.gohtml"))
 	router.Get("/", controllers.StaticHandler(tpl, nil))
 
-	tpl = views.Must(views.Parse(filepath.Join("templates", "contact.gohtml")))
+	tpl = views.Must(views.ParseFS(templates.FS, "contact.gohtml"))
 	router.Get("/contact", controllers.StaticHandler(tpl, nil))
 
-	tpl = views.Must(views.Parse(filepath.Join("templates", "faq.gohtml")))
+	tpl = views.Must(views.ParseFS(templates.FS, "faq.gohtml"))
 	router.Get("/faq", controllers.StaticHandler(tpl, nil))
 
-	tpl = views.Must(views.Parse(filepath.Join("templates", "dummy.gohtml")))
+	tpl = views.Must(views.ParseFS(templates.FS, "dummy.gohtml"))
 	router.Get("/dummy", controllers.StaticHandler(tpl, struct {
 		DummyData string
 	}{
