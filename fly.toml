@@ -10,8 +10,6 @@ primary_region = "otp"
   builder = "paketobuildpacks/builder:base"
   buildpacks = ["gcr.io/paketo-buildpacks/go"]
 
-[deploy]
-  release_command = "./download_tailwind.sh"
 
 [env]
   PORT = "8080"
