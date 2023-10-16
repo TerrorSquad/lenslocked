@@ -7,9 +7,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     {{/* TODO: Figure out how to build the CSS in the pack builder and use it here, instead of pulling from the CDN */}}
     <script src="/dist/app.css" rel="stylesheet"></script>
-    <title>Lenslocked</title>
+    <title>Lenslocked 📷</title>
 </head>
 <body>
+<header class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+    <nav class="px-8 py-6 flex items-center">
+        <div class="text-4xl pr-12"><a href="/">Lenslocked 📷</a></div>
+        <div class="flex-grow">
+            <a class="text-lg font-semibold hover:text-blue-100 pr-8" href="/">Home</a>
+            <a class="text-lg font-semibold hover:text-blue-100 pr-8" href="/contact">Contact</a>
+            <a class="text-lg font-semibold hover:text-blue-100 pr-8" href="/faq">FAQ</a>
+        </div>
+        <div>
+            <a class="px-4 py-2 bg-amber-400 hover:bg-amber-300 rounded" href="#">Sign in</a>
+            <a class="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded" href="#">Sign up</a>
+        </div>
+    </nav>
+</header>
 <h1 class="py-4"></h1>
     {{ template "page" . }}
 </body>
