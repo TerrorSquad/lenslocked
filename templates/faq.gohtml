@@ -1,26 +1,28 @@
 {{ define "page" }}
-<h1>FAQ:</h1>
+ <div class="px-6">
+     <h1 class="py-4 text-4xl semibold tracking-tight">FAQ:</h1>
+     <ul class="grid grid-cols-2 gap-16">
+        {{/* Inline code without a template */}}
+        {{/*    {{ range . }}*/}}
+        {{/*        <li>*/}}
+        {{/*            <p>{{ .Question }}</p>*/}}
+        {{/*            <p>{{ .Answer }}</p>*/}}
+        {{/*        </li>*/}}
+        {{/*    {{ end }}*/}}
 
-<ul>
-    {{/* Inline code without a template */}}
-    {{ range . }}
-        <li>
-            <p>{{ .Question }}</p>
-            <p>{{ .Answer }}</p>
-        </li>
-    {{ end }}
+        {{/* Use a template called qa and pass data to it */}}
+        {{ range . }}
+            {{ template "qa" . }}
+        {{ end }}
+    </ul>
+</div>
 
-    {{/* Use a template called qa and pass data to it */}}
-    {{ range . }}
-        {{ template "qa" . }}
-    {{ end }}
-</ul>
 {{ end }}
 
-{{/*    Nested template definitions are not supported*/}}
+{{/*    Nested template definitions are not supported... I think */}}
 {{define "qa"}}
-    <li>
-        <p><strong>{{ .Question }}</strong></p>
-        <p>{{ .Answer }}</p>
+    <li class="border-t border-indigo-400 py-1 px-2">
+        <span class="block text-lg text-gray-800 semibold">{{ .Question }}</span>
+        <span class="block text-sm text-gray-500">{{ .Answer }}</span>
     </li>
 {{end}}
