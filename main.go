@@ -33,6 +33,6 @@ func main() {
 
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
 
-	http.ListenAndServe("localhost:3000", router)
 	fmt.Println("Server is running on port 3000")
+	http.ListenAndServe("localhost:3000", router)
 }
