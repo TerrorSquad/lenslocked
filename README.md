@@ -23,3 +23,22 @@ To run the application run the following command in your terminal:
 ```
 lenslocked
 ```
+
+
+### Development
+
+This project uses [modd](https://github.com/cortesi/modd) to run the application and automatically reload it when changes
+are made. To run the application in development mode run the following command in your terminal:
+
+```bash
+modd
+```
+
+Note: TailwindCSS is used for styling and the [standalone CLI](https://tailwindcss.com/blog/standalone-cli#get-started) build is used. There is a helper script `download_tailwind.sh`
+that will download the latest version of TailwindCSS and place it in the root of the project. This script is run automatically
+when the application is built.
+
+### Built With
+- [Go](https://golang.org/) - The programming language used
+- [TailwindCSS](https://tailwindcss.com/) - The CSS framework used
+- [modd](https://github.com/cortesi/modd) - The tool used to run the application in development mode
