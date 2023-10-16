@@ -29,6 +29,14 @@ func main() {
 	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/faq.gohtml")...))
 	router.Get("/faq", controllers.FAQ(tpl))
 
+	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signup.gohtml")...))
+	router.Get("/signup", controllers.StaticHandler(tpl, nil))
+	router.Post("/signup", func(writer http.ResponseWriter, request *http.Request) {
+		log.Println("Signup form posted")
+		log.Println("email:", request.FormValue("email"))
+		log.Println("password:", request.FormValue("password"))
+	})
+
 	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/dummy.gohtml")...))
 	router.Get("/dummy", controllers.StaticHandler(tpl, struct {
 		DummyData string

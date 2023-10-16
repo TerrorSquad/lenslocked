@@ -1,0 +1,20 @@
+{{define "page"}}
+
+    <form method="POST" action="/signup" class="flex flex-col mx-auto pt-4">
+        <h1 class="text-3xl">Sign up</h1>
+
+        <div class="mt-8 flex flex-col">
+            <label for="email" class="text-lg">Email</label>
+            <input class="px-2 py-1 border-b border-blue-100 align-middle" id="email" name="email" type="email" placeholder="email" required autocomplete="email">
+        </div>
+        <div class="mt-8 flex flex-col">
+            <label for="password" class="text-lg">Password</label>
+            <input class="px-2 py-1 border-b border-blue-100 text-start align-middle" id="password" name="password" type="password" placeholder="********">
+        </div>
+        <div class="mt-8 flex">
+            <button class="bg-blue-500 hover:bg-blue-700 p-2 rounded text-lg text-white flex-grow" type="submit">Sign up</button>
+        </div>
+
+    </form>
+
+{{end}}
