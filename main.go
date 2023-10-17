@@ -32,7 +32,7 @@ func main() {
 	usersC := controllers.Users{}
 	usersC.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signup.gohtml")...))
 	router.Get("/signup", usersC.New)
-	
+
 	router.Post("/signup", func(writer http.ResponseWriter, request *http.Request) {
 		log.Println("Signup form posted")
 		log.Println("email:", request.FormValue("email"))

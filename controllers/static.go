@@ -1,18 +1,17 @@
 package controllers
 
 import (
-	"github.com/terrorsquad/lenslocked/views"
 	"html/template"
 	"net/http"
 )
 
-func StaticHandler(tpl views.Template, data interface{}) http.HandlerFunc {
+func StaticHandler(tpl Template, data interface{}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tpl.Execute(w, data)
 	}
 }
 
-func FAQ(tpl views.Template) http.HandlerFunc {
+func FAQ(tpl Template) http.HandlerFunc {
 	questions := []struct {
 		Question string
 		Answer   template.HTML
