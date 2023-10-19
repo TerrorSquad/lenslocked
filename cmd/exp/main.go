@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
@@ -59,9 +60,9 @@ func main() {
 	}
 
 	fmt.Println("Created tables successfully")
-
-	name := "Alice Calhoun"
-	email := "alice2@example.com"
+	//
+	//name := "Alice Calhoun"
+	//email := "alice2@example.com"
 	// This is bad! Don't do this!
 	// SQL injection vulnerability
 	//name = "',''); DROP TABLE users; --"
@@ -71,14 +72,27 @@ func main() {
 	//fmt.Println("Executing query: " + query)
 	//_, err = db.Exec(query)
 
-	row := db.QueryRow(`
-		INSERT INTO users (name, email)
-		VALUES ($1, $2) RETURNING id;`, name, email)
-	var id int
-	err = row.Scan(&id)
+	//row := db.QueryRow(`
+	//	INSERT INTO users (name, email)
+	//	VALUES ($1, $2) RETURNING id;`, name, email)
+	//var id int
+	//err = row.Scan(&id)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//fmt.Println("User created. ID: ", id)
+
+	id := 1
+	row := db.QueryRow(`SELECT name, email FROM users WHERE id = $1;`, id)
+	var name, email string
+	err = row.Scan(&name, &email)
+	if errors.Is(err, sql.ErrNoRows) {
+		fmt.Println("No user found")
+	}
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("User created. ID: ", id)
+	fmt.Println("User:", name, email)
 }
