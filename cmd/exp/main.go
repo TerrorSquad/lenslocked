@@ -96,16 +96,50 @@ func main() {
 
 	fmt.Println("User:", name, email)
 
+	//userID := 1
+	//for i := 1; i <= 5; i++ {
+	//	amount := i * 100
+	//	description := fmt.Sprintf("Fake order #%d", i)
+	//	_, err = db.Exec(`
+	//		INSERT INTO orders (user_id, amount, description)
+	//		VALUES ($1, $2, $3);`, userID, amount, description)
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//}
+	//fmt.Println("Created orders successfully")
+
+	type Order struct {
+		ID          int
+		userID      int
+		Amount      int
+		Description string
+	}
+
+	var orders []Order
 	userID := 1
-	for i := 1; i <= 5; i++ {
-		amount := i * 100
-		description := fmt.Sprintf("Fake order #%d", i)
-		_, err = db.Exec(`
-			INSERT INTO orders (user_id, amount, description)
-			VALUES ($1, $2, $3);`, userID, amount, description)
+	rows, err := db.Query(`
+		SELECT id, amount, description 
+		FROM orders 
+		WHERE user_id = $1;`, userID)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var o Order
+		o.userID = userID
+		err = rows.Scan(&o.ID, &o.Amount, &o.Description)
 		if err != nil {
 			panic(err)
 		}
+		orders = append(orders, o)
 	}
-	fmt.Println("Created orders successfully")
+	err = rows.Err()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Orders:", orders)
+
 }
