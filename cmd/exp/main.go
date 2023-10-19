@@ -60,8 +60,8 @@ func main() {
 
 	fmt.Println("Created tables successfully")
 
-	name := "Bob Calhoun"
-	email := "bob@example.com"
+	name := "Alice Calhoun"
+	email := "alice2@example.com"
 	// This is bad! Don't do this!
 	// SQL injection vulnerability
 	//name = "',''); DROP TABLE users; --"
@@ -70,13 +70,15 @@ func main() {
 	//   	VALUES ('%s', '%s');`, name, email)
 	//fmt.Println("Executing query: " + query)
 	//_, err = db.Exec(query)
-	
-	_, err = db.Exec(`
+
+	row := db.QueryRow(`
 		INSERT INTO users (name, email)
-		VALUES ($1, $2);`, name, email)
+		VALUES ($1, $2) RETURNING id;`, name, email)
+	var id int
+	err = row.Scan(&id)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Inserted user successfully")
+	fmt.Println("User created. ID: ", id)
 }
