@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/terrorsquad/lenslocked/models"
 	"net/http"
 )
 
@@ -9,6 +10,7 @@ type Users struct {
 	Templates struct {
 		New Template
 	}
+	UserService *models.UserService
 }
 
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {

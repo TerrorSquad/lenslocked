@@ -5,6 +5,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/terrorsquad/lenslocked/controllers"
+	"github.com/terrorsquad/lenslocked/models"
 	"github.com/terrorsquad/lenslocked/templates"
 	"github.com/terrorsquad/lenslocked/views"
 	"log"
@@ -29,7 +30,18 @@ func main() {
 	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/faq.gohtml")...))
 	router.Get("/faq", controllers.FAQ(tpl))
 
-	usersC := controllers.Users{}
+	cfg := models.DefaultPostgresConfig()
+	db, err := models.Open(cfg)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	userService := models.UserService{
+		DB: db,
+	}
+	usersC := controllers.Users{
+		UserService: &userService,
+	}
 	usersC.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signup.gohtml")...))
 	router.Get("/signup", usersC.New)
 	router.Post("/users", usersC.Create)
