@@ -32,3 +32,4 @@ lenslocked
 app
 tailwindcss
 dist/*
+bcrypt
