@@ -39,12 +39,12 @@ func main() {
 	userService := models.UserService{
 		DB: db,
 	}
-	usersC := controllers.Users{
+	usersController := controllers.Users{
 		UserService: &userService,
 	}
-	usersC.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signup.gohtml")...))
-	router.Get("/signup", usersC.New)
-	router.Post("/users", usersC.Create)
+	usersController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signup.gohtml")...))
+	router.Get("/signup", usersController.New)
+	router.Post("/users", usersController.Create)
 
 	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/dummy.gohtml")...))
 	router.Get("/dummy", controllers.StaticHandler(tpl, struct {
