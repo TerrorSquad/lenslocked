@@ -43,5 +43,10 @@ func hash(password string) {
 }
 
 func compare(password, hash string) {
-	fmt.Println("TODO: Compare the password:", password, hash)
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err != nil {
+		fmt.Println("Password does not match hash:", password, hash, err)
+		return
+	}
+	fmt.Println("Password matches hash:", password, hash)
 }
