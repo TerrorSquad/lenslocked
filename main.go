@@ -44,10 +44,11 @@ func main() {
 	}
 	usersController.Templates.SignIn = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signin.gohtml")...))
 	usersController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signup.gohtml")...))
-	router.Get("/signup", usersController.New)    // shows the signup form
-	router.Post("/users", usersController.Create) // creates the user
-	router.Get("/signin", usersController.SignIn) // shows the signin form
-	
+	router.Get("/signup", usersController.New)
+	router.Post("/users", usersController.Create)
+	router.Get("/signin", usersController.SignIn)
+	router.Post("/signin", usersController.Authenticate)
+
 	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/dummy.gohtml")...))
 	router.Get("/dummy", controllers.StaticHandler(tpl, struct {
 		DummyData string
