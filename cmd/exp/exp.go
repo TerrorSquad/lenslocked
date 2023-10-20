@@ -1,35 +1,13 @@
 package main
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
-	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/terrorsquad/lenslocked/models"
 )
 
-type PostgresConfig struct {
-	Host     string
-	Port     string
-	User     string
-	Password string
-	Database string
-	SSLMode  string
-}
-
-func (cfg PostgresConfig) String() string {
-	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Database, cfg.SSLMode)
-}
-
 func main() {
-	cfg := PostgresConfig{
-		Host:     "localhost",
-		Port:     "5432",
-		User:     "baloo",
-		Password: "junglebook",
-		Database: "lenslocked",
-		SSLMode:  "disable",
-	}
-	db, err := sql.Open("pgx", cfg.String())
+	cfg := models.DefaultPostgresConfig()
+	db, err := models.Open(cfg)
 	if err != nil {
 		panic(err)
 	}
@@ -46,23 +24,23 @@ func main() {
 		    name TEXT,
 		    email TEXT NOT NULL UNIQUE
 		);
-
-		CREATE TABLE IF NOT EXISTS orders (
-			id SERIAL PRIMARY KEY,
-		    user_id INT NOT NULL,
-		    amount INT NOT NULL,
-		    description TEXT
-		);
+	
+-- 		CREATE TABLE IF NOT EXISTS orders (
+-- 			id SERIAL PRIMARY KEY,
+-- 		    user_id INT NOT NULL,
+-- 		    amount INT NOT NULL,
+-- 		    description TEXT
+-- 		);
 	`)
 
 	if err != nil {
 		panic(err)
 	}
-
+	//
 	fmt.Println("Created tables successfully")
 	//
-	//name := "Alice Calhoun"
-	//email := "alice2@example.com"
+	name := "Alice Calhoun"
+	email := "alice2@example.com"
 	// This is bad! Don't do this!
 	// SQL injection vulnerability
 	//name = "',''); DROP TABLE users; --"
@@ -72,29 +50,29 @@ func main() {
 	//fmt.Println("Executing query: " + query)
 	//_, err = db.Exec(query)
 
-	//row := db.QueryRow(`
-	//	INSERT INTO users (name, email)
-	//	VALUES ($1, $2) RETURNING id;`, name, email)
-	//var id int
-	//err = row.Scan(&id)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//
-	//fmt.Println("User created. ID: ", id)
-
-	id := 1
-	row := db.QueryRow(`SELECT name, email FROM users WHERE id = $1;`, id)
-	var name, email string
-	err = row.Scan(&name, &email)
-	if errors.Is(err, sql.ErrNoRows) {
-		fmt.Println("No user found")
-	}
+	row := db.QueryRow(`
+		INSERT INTO users (name, email)
+		VALUES ($1, $2) RETURNING id;`, name, email)
+	var id int
+	err = row.Scan(&id)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("User:", name, email)
+	fmt.Println("User created. ID: ", id)
+
+	//id := 1
+	//row := db.QueryRow(`SELECT name, email FROM users WHERE id = $1;`, id)
+	//var name, email string
+	//err = row.Scan(&name, &email)
+	//if errors.Is(err, sql.ErrNoRows) {
+	//	fmt.Println("No user found")
+	//}
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//fmt.Println("User:", name, email)
 
 	//userID := 1
 	//for i := 1; i <= 5; i++ {
@@ -109,37 +87,37 @@ func main() {
 	//}
 	//fmt.Println("Created orders successfully")
 
-	type Order struct {
-		ID          int
-		userID      int
-		Amount      int
-		Description string
-	}
-
-	var orders []Order
-	userID := 1
-	rows, err := db.Query(`
-		SELECT id, amount, description 
-		FROM orders 
-		WHERE user_id = $1;`, userID)
-	if err != nil {
-		panic(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var o Order
-		o.userID = userID
-		err = rows.Scan(&o.ID, &o.Amount, &o.Description)
-		if err != nil {
-			panic(err)
-		}
-		orders = append(orders, o)
-	}
-	err = rows.Err()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Orders:", orders)
+	//type Order struct {
+	//	ID          int
+	//	userID      int
+	//	Amount      int
+	//	Description string
+	//}
+	//
+	//var orders []Order
+	//userID := 1
+	//rows, err := db.Query(`
+	//	SELECT id, amount, description
+	//	FROM orders
+	//	WHERE user_id = $1;`, userID)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//defer rows.Close()
+	//
+	//for rows.Next() {
+	//	var o Order
+	//	o.userID = userID
+	//	err = rows.Scan(&o.ID, &o.Amount, &o.Description)
+	//	if err != nil {
+	//		panic(err)
+	//	}
+	//	orders = append(orders, o)
+	//}
+	//err = rows.Err()
+	//if err != nil {
+	//	panic(err)
+	//}
+	//fmt.Println("Orders:", orders)
 
 }
