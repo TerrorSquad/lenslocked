@@ -7,7 +7,7 @@ import (
 
 func StaticHandler(tpl Template, data interface{}) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		tpl.Execute(w, data)
+		tpl.Execute(w, r, data)
 	}
 }
 
