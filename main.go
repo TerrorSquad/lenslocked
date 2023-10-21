@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gorilla/csrf"
 	"github.com/terrorsquad/lenslocked/controllers"
 	"github.com/terrorsquad/lenslocked/models"
 	"github.com/terrorsquad/lenslocked/templates"
@@ -71,5 +72,11 @@ func main() {
 
 	fmt.Println("Server is running on port: " + PORT)
 	log.Println("Server is running on port: " + PORT)
-	log.Fatal(http.ListenAndServe(address+":"+PORT, router))
+	csrfKey := []byte("gA29bm9uY2UgY2FsbCB0aGlzIGlzIGEgY29va2ll")
+	csrfMw := csrf.Protect(
+		csrfKey,
+		// TODO: Fix this before deploying to production
+		csrf.Secure(false),
+	)
+	log.Fatal(http.ListenAndServe(address+":"+PORT, csrfMw(router)))
 }
