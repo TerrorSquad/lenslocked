@@ -4,7 +4,9 @@
             <h1 class="text-3xl text-center font-bold text-gray-700 pt-4 pb-5">Sign in</h1>
             <p class="text-semibold p-2 text center text-gray-500">Welcome back</p>
             <form method="POST" action="/signin" class="flex flex-col mx-auto pt-4">
-
+                <div class="hidden">
+                    {{csrfField}}
+                </div>
                 <div class="mt-8 flex flex-col">
                     <label for="email" class="text-lg font-semibold">Email</label>
                     <input class="px-2 py-1 border-b border-blue-100 align-middle"
