@@ -6,7 +6,7 @@
             <form method="POST" action="/users" class="flex flex-col mx-auto pt-4">
 
                 <div class="hidden">
-                    {{.CSRFField}}
+                    {{csrfField}}
                 </div>
 
                 <div class="mt-8 flex flex-col">
@@ -22,7 +22,6 @@
                            {{if not .Email}}autofocus{{end}}
                     />
                 </div>
-
                 <div class="mt-8 flex flex-col">
                     <label for="password" class="text-lg font-semibold">Password</label>
                     <input class="px-2 py-1 border-b border-blue-100 text-start align-middle"
