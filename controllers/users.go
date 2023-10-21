@@ -60,3 +60,13 @@ func (u Users) Authenticate(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintf(w, "User authenticated: %+v", user)
 }
+
+func (u Users) User(w http.ResponseWriter, r *http.Request) {
+	emailCookie, err := r.Cookie("email")
+	if err != nil {
+		fmt.Fprint(w, "The email cookie was not found")
+		return
+	}
+	fmt.Fprintf(w, "Email cookie: %s\n", emailCookie.Value)
+	fmt.Fprintf(w, "Headers %s\n", r.Header)
+}
