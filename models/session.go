@@ -3,8 +3,8 @@ package models
 import "database/sql"
 
 type Session struct {
-	ID     int
-	UserID int
+	ID     uint
+	UserID uint
 	// Token is only set when creating a new session. When looking up a session
 	// this will be empty, as we only store the hashed version of the token.
 	Token     string
@@ -15,7 +15,7 @@ type SessionService struct {
 	DB *sql.DB
 }
 
-func (ss *SessionService) Create(userID int) (*Session, error) {
+func (ss *SessionService) Create(userID uint) (*Session, error) {
 	// TODO: 1. Create the session token
 	// TODO: 2. Implement SessionService.Create
 	return nil, nil

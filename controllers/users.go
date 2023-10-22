@@ -11,7 +11,8 @@ type Users struct {
 		New    Template
 		SignIn Template
 	}
-	UserService *models.UserService
+	UserService    *models.UserService
+	SessionService *models.SessionService
 }
 
 func (u Users) New(w http.ResponseWriter, r *http.Request) {
@@ -31,6 +32,21 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
+	session, err := u.SessionService.Create(user.ID)
+	if err != nil {
+		fmt.Println(err)
+		// TODO: Long term, we should show a warning to the user that their session was not created.
+		http.Redirect(w, r, "/signin", http.StatusFound)
+		return
+	}
+	cookie := http.Cookie{
+		Name:     "session",
+		Value:    session.Token,
+		Path:     "/",
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &cookie)
+	http.Redirect(w, r, "/users/me", http.StatusFound)
 	fmt.Fprintf(w, "User created: %+v", user)
 }
 
@@ -51,23 +67,35 @@ func (u Users) Authenticate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
+	session, err := u.SessionService.Create(user.ID)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
 	cookie := http.Cookie{
-		Name:     "email",
-		Value:    user.Email,
+		Name:     "session",
+		Value:    session.Token,
 		Path:     "/",
 		HttpOnly: true,
 	}
 	http.SetCookie(w, &cookie)
 
-	fmt.Fprintf(w, "User authenticated: %+v", user)
+	http.Redirect(w, r, "/users/me", http.StatusFound)
 }
 
-func (u Users) User(w http.ResponseWriter, r *http.Request) {
-	emailCookie, err := r.Cookie("email")
+func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
+	tokenCookie, err := r.Cookie("session")
 	if err != nil {
-		fmt.Fprint(w, "The email cookie was not found")
+		fmt.Println(err)
+		http.Redirect(w, r, "/signin", http.StatusFound)
 		return
 	}
-	fmt.Fprintf(w, "Email cookie: %s\n", emailCookie.Value)
-	fmt.Fprintf(w, "Headers %s\n", r.Header)
+	user, err := u.SessionService.User(tokenCookie.Value)
+	if err != nil {
+		fmt.Println(err)
+		http.Redirect(w, r, "/signin", http.StatusFound)
+		return
+	}
+	fmt.Fprintf(w, "User: %s\n", user.Email)
 }

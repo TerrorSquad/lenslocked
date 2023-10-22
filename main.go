@@ -49,7 +49,7 @@ func main() {
 	router.Post("/users", usersController.Create)
 	router.Get("/signin", usersController.SignIn)
 	router.Post("/signin", usersController.Authenticate)
-	router.Get("/users/me", usersController.User)
+	router.Get("/users/me", usersController.CurrentUser)
 
 	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/dummy.gohtml")...))
 	router.Get("/dummy", controllers.StaticHandler(tpl, struct {
