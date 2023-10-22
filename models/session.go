@@ -6,6 +6,11 @@ import (
 	"github.com/terrorsquad/lenslocked/rand"
 )
 
+const (
+	// MinBytesPerToken The minimum number of bytes to be used for each session token.
+	MinBytesPerToken = 32
+)
+
 type Session struct {
 	ID     uint
 	UserID uint
@@ -17,10 +22,18 @@ type Session struct {
 
 type SessionService struct {
 	DB *sql.DB
+	// BytesPerToken is used to determine how many bytes should be used when generating
+	// each session token. If this value is not set or is less than the MinBytesPerToken const it will be ignored
+	// and the MinBytesPerToken value will be used instead.
+	BytesPerToken int
 }
 
 func (ss *SessionService) Create(userID uint) (*Session, error) {
-	token, err := rand.SessionToken()
+	bytesPerToken := ss.BytesPerToken
+	if bytesPerToken < MinBytesPerToken {
+		bytesPerToken = MinBytesPerToken
+	}
+	token, err := rand.String(bytesPerToken)
 	if err != nil {
 		return nil, fmt.Errorf("create: %w", err)
 	}
