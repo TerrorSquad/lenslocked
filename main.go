@@ -54,6 +54,7 @@ func main() {
 	router.Get("/signin", usersController.SignIn)
 	router.Post("/signin", usersController.Authenticate)
 	router.Get("/users/me", usersController.CurrentUser)
+	router.Post("/signout", usersController.SignOut)
 
 	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/dummy.gohtml")...))
 	router.Get("/dummy", controllers.StaticHandler(tpl, struct {
