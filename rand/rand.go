@@ -21,7 +21,6 @@ func Bytes(n int) ([]byte, error) {
 // String returns a random string using the crypto/rand package
 // n is the number of bytes being used to generate the random string
 func String(n int) (string, error) {
-	const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
 	bytes, err := Bytes(n)
 	if err != nil {
 		return "", fmt.Errorf("string: %w", err)
