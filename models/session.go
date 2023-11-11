@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"github.com/terrorsquad/lenslocked/rand"
 )
@@ -44,11 +45,22 @@ func (ss *SessionService) Create(userID uint) (*Session, error) {
 		Token:     token,
 		TokenHash: ss.hash(token),
 	}
+
+	// 1. try to update the session
+	// 2. if no session exists, create a new one
+
 	row := ss.DB.QueryRow(
-		`INSERT INTO sessions (user_id, token_hash) VALUES ($1, $2) RETURNING id;`,
+		`UPDATE sessions SET token_hash = $2 WHERE user_id = $1 RETURNING id;`,
 		session.UserID, session.TokenHash,
 	)
 	err = row.Scan(&session.ID)
+	if errors.Is(err, sql.ErrNoRows) {
+		row = ss.DB.QueryRow(
+			`INSERT INTO sessions (user_id, token_hash) VALUES ($1, $2) RETURNING id;`,
+			session.UserID, session.TokenHash,
+		)
+		err = row.Scan(&session.ID)
+	}
 
 	if err != nil {
 		return nil, fmt.Errorf("create: %w", err)
