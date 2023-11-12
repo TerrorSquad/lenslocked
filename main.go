@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/csrf"
 	"github.com/terrorsquad/lenslocked/controllers"
+	"github.com/terrorsquad/lenslocked/migrations"
 	"github.com/terrorsquad/lenslocked/models"
 	"github.com/terrorsquad/lenslocked/templates"
 	"github.com/terrorsquad/lenslocked/views"
@@ -39,7 +40,7 @@ func main() {
 	}
 	defer db.Close()
 
-	err = models.Migration(db)
+	err = models.MigrateFS(db, migrations.FS, ".")
 	if err != nil {
 		panic(err)
 	}
