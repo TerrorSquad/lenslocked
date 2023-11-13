@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/terrorsquad/lenslocked/context"
 	"github.com/terrorsquad/lenslocked/models"
 	"net/http"
 )
@@ -89,17 +90,33 @@ func (u Users) SignOut(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
-	tokenCookie, err := readCookie(r, CookieSession)
-	if err != nil {
-		fmt.Println(err)
-		http.Redirect(w, r, "/signin", http.StatusFound)
-		return
-	}
-	user, err := u.SessionService.User(tokenCookie)
-	if err != nil {
-		fmt.Println(err)
+	user := context.User(r.Context())
+	if user == nil {
 		http.Redirect(w, r, "/signin", http.StatusFound)
 		return
 	}
 	fmt.Fprintf(w, "User: %s\n", user.Email)
+}
+
+type UserMiddleware struct {
+	SessionService *models.SessionService
+}
+
+func (umw UserMiddleware) SetUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tokenCookie, err := readCookie(r, CookieSession)
+		if err != nil {
+			fmt.Println(err)
+			next.ServeHTTP(w, r)
+			return
+		}
+		user, err := umw.SessionService.User(tokenCookie)
+		if err != nil {
+			fmt.Println(err)
+			next.ServeHTTP(w, r)
+			return
+		}
+		ctx := context.WithUser(r.Context(), user)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }

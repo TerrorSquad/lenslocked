@@ -73,6 +73,10 @@ func main() {
 
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
 
+	umw := controllers.UserMiddleware{
+		SessionService: &sessionService,
+	}
+
 	PORT := os.Getenv("PORT")
 	if PORT == "" {
 		PORT = "8080"
@@ -83,13 +87,13 @@ func main() {
 		address = "localhost"
 	}
 
-	fmt.Println("Server is running on port: " + PORT)
-	log.Println("Server is running on port: " + PORT)
 	csrfKey := []byte("gA29bm9uY2UgY2FsbCB0aGlzIGlzIGEgY29va2ll")
 	csrfMw := csrf.Protect(
 		csrfKey,
 		// TODO: Fix this before deploying to production
 		csrf.Secure(false),
 	)
-	log.Fatal(http.ListenAndServe(address+":"+PORT, csrfMw(router)))
+	fmt.Println("Server is running on port: " + PORT)
+	log.Println("Server is running on port: " + PORT)
+	log.Fatal(http.ListenAndServe(address+":"+PORT, csrfMw(umw.SetUser(router))))
 }
