@@ -17,20 +17,7 @@ import (
 )
 
 func main() {
-	router := chi.NewRouter()
-	router.Use(middleware.Logger)
-	var tpl views.Template
-
-	var baseLayouts = []string{"layouts/layout-page.gohtml", "layouts/layout-page-tailwind.gohtml"}
-
-	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/home.gohtml")...))
-	router.Get("/", controllers.StaticHandler(tpl, nil))
-
-	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/contact.gohtml")...))
-	router.Get("/contact", controllers.StaticHandler(tpl, nil))
-
-	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/faq.gohtml")...))
-	router.Get("/faq", controllers.FAQ(tpl))
+	// Set up database connection
 
 	cfg := models.DefaultPostgresConfig()
 	fmt.Println(cfg.String())
@@ -45,33 +32,16 @@ func main() {
 		panic(err)
 	}
 
+	// Setup services
+
 	userService := models.UserService{
 		DB: db,
 	}
 	sessionService := models.SessionService{
 		DB: db,
 	}
-	usersController := controllers.Users{
-		UserService:    &userService,
-		SessionService: &sessionService,
-	}
-	usersController.Templates.SignIn = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signin.gohtml")...))
-	usersController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signup.gohtml")...))
-	router.Get("/signup", usersController.New)
-	router.Post("/users", usersController.Create)
-	router.Get("/signin", usersController.SignIn)
-	router.Post("/signin", usersController.Authenticate)
-	router.Get("/users/me", usersController.CurrentUser)
-	router.Post("/signout", usersController.SignOut)
 
-	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/dummy.gohtml")...))
-	router.Get("/dummy", controllers.StaticHandler(tpl, struct {
-		DummyData string
-	}{
-		DummyData: "Lorem ipsum dolor sit amet",
-	}))
-
-	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
+	// Setup middleware
 
 	umw := controllers.UserMiddleware{
 		SessionService: &sessionService,
@@ -93,7 +63,46 @@ func main() {
 		// TODO: Fix this before deploying to production
 		csrf.Secure(false),
 	)
+
+	// Setup controllers
+
+	usersController := controllers.Users{
+		UserService:    &userService,
+		SessionService: &sessionService,
+	}
+	var baseLayouts = []string{"layouts/layout-page.gohtml", "layouts/layout-page-tailwind.gohtml"}
+	usersController.Templates.SignIn = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signin.gohtml")...))
+	usersController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signup.gohtml")...))
+
+	// Setup router and routes
+
+	router := chi.NewRouter()
+	router.Use(middleware.Logger)
+	router.Use(csrfMw)
+	router.Use(umw.SetUser)
+	var tpl views.Template
+
+	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/home.gohtml")...))
+	router.Get("/", controllers.StaticHandler(tpl, nil))
+
+	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/contact.gohtml")...))
+	router.Get("/contact", controllers.StaticHandler(tpl, nil))
+
+	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/faq.gohtml")...))
+	router.Get("/faq", controllers.FAQ(tpl))
+
+	router.Get("/signup", usersController.New)
+	router.Post("/users", usersController.Create)
+	router.Get("/signin", usersController.SignIn)
+	router.Post("/signin", usersController.Authenticate)
+	router.Post("/signout", usersController.SignOut)
+	router.Route("/users/me", func(r chi.Router) {
+		r.Use(umw.RequireUser)
+		r.Get("/", usersController.CurrentUser)
+	})
+	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
+
 	fmt.Println("Server is running on port: " + PORT)
 	log.Println("Server is running on port: " + PORT)
-	log.Fatal(http.ListenAndServe(address+":"+PORT, csrfMw(umw.SetUser(router))))
+	log.Fatal(http.ListenAndServe(address+":"+PORT, router))
 }

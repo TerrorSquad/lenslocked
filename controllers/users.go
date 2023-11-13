@@ -91,10 +91,6 @@ func (u Users) SignOut(w http.ResponseWriter, r *http.Request) {
 
 func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
 	user := context.User(r.Context())
-	if user == nil {
-		http.Redirect(w, r, "/signin", http.StatusFound)
-		return
-	}
 	fmt.Fprintf(w, "User: %s\n", user.Email)
 }
 
@@ -118,5 +114,17 @@ func (umw UserMiddleware) SetUser(next http.Handler) http.Handler {
 		}
 		ctx := context.WithUser(r.Context(), user)
 		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func (umw UserMiddleware) RequireUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := context.User(r.Context())
+		if user == nil {
+			http.Redirect(w, r, "/signin", http.StatusFound)
+			// TODO: Add a flash message to tell the user why they were redirected.
+			return
+		}
+		next.ServeHTTP(w, r)
 	})
 }
