@@ -7,6 +7,7 @@ require (
 	github.com/gorilla/csrf v1.7.1
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/pressly/goose/v3 v3.16.0
+	github.com/wneessen/go-mail v0.4.0
 	golang.org/x/crypto v0.15.0
 )
 
@@ -21,7 +22,6 @@ require (
 	github.com/jackc/pgtype v1.14.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sethvargo/go-retry v0.2.4 // indirect
-	github.com/wneessen/go-mail v0.4.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
