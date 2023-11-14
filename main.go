@@ -5,6 +5,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/csrf"
+	"github.com/joho/godotenv"
 	"github.com/terrorsquad/lenslocked/controllers"
 	"github.com/terrorsquad/lenslocked/migrations"
 	"github.com/terrorsquad/lenslocked/models"
@@ -14,14 +15,63 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"strconv"
 )
 
-func main() {
-	// Set up database connection
+type config struct {
+	PSQL models.PostgresConfig
+	SMTP models.SMTPConfig
+	CSRF struct {
+		Key    string
+		Secure bool
+	}
+	Server struct {
+		Address string
+		Port    string
+	}
+}
 
-	cfg := models.DefaultPostgresConfig()
-	fmt.Println(cfg.String())
-	db, err := models.Open(cfg)
+func loadEnvConfig() (config, error) {
+	var cfg config
+	err := godotenv.Load()
+	if err != nil {
+		return cfg, err
+	}
+
+	cfg.PSQL = models.DefaultPostgresConfig()
+
+	cfg.SMTP.Host = os.Getenv("SMTP_HOST")
+	cfg.SMTP.Port, err = strconv.Atoi(os.Getenv("SMTP_PORT"))
+	if err != nil {
+		return cfg, err
+	}
+	cfg.SMTP.Username = os.Getenv("SMTP_USERNAME")
+	cfg.SMTP.Password = os.Getenv("SMTP_PASSWORD")
+
+	cfg.CSRF.Key = os.Getenv("CSRF_KEY")
+	cfg.CSRF.Secure = false
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	address := ""
+	if runtime.GOOS == "darwin" {
+		address = "localhost"
+	}
+	cfg.Server.Address = address
+	cfg.Server.Port = port
+	return cfg, nil
+}
+
+func main() {
+	cfg, err := loadEnvConfig()
+	if err != nil {
+		panic(err)
+	}
+	// Set up database connection
+	db, err := models.Open(cfg.PSQL)
 	if err != nil {
 		panic(err)
 	}
@@ -34,41 +84,37 @@ func main() {
 
 	// Setup services
 
-	userService := models.UserService{
+	userService := &models.UserService{
 		DB: db,
 	}
-	sessionService := models.SessionService{
+	sessionService := &models.SessionService{
 		DB: db,
 	}
+	passwordResetService := &models.PasswordResetService{
+		DB: db,
+	}
+
+	emailService, err := models.NewEmailService(cfg.SMTP)
 
 	// Setup middleware
 
 	umw := controllers.UserMiddleware{
-		SessionService: &sessionService,
+		SessionService: sessionService,
 	}
 
-	PORT := os.Getenv("PORT")
-	if PORT == "" {
-		PORT = "8080"
-	}
-
-	address := ""
-	if runtime.GOOS == "darwin" {
-		address = "localhost"
-	}
-
-	csrfKey := []byte("gA29bm9uY2UgY2FsbCB0aGlzIGlzIGEgY29va2ll")
+	csrfKey := []byte(cfg.CSRF.Key)
 	csrfMw := csrf.Protect(
 		csrfKey,
-		// TODO: Fix this before deploying to production
-		csrf.Secure(false),
+		csrf.Secure(cfg.CSRF.Secure),
 	)
 
 	// Setup controllers
 
 	usersController := controllers.Users{
-		UserService:    &userService,
-		SessionService: &sessionService,
+		UserService:          userService,
+		SessionService:       sessionService,
+		PasswordResetService: passwordResetService,
+		EmailService:         emailService,
 	}
 	var baseLayouts = []string{"layouts/layout-page.gohtml", "layouts/layout-page-tailwind.gohtml"}
 	usersController.Templates.SignIn = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signin.gohtml")...))
@@ -105,7 +151,7 @@ func main() {
 	})
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
 
-	fmt.Println("Server is running on port: " + PORT)
-	log.Println("Server is running on port: " + PORT)
-	log.Fatal(http.ListenAndServe(address+":"+PORT, router))
+	fmt.Println("Server is running on port: " + cfg.Server.Port)
+	log.Println("Server is running on port: " + cfg.Server.Port)
+	log.Fatal(http.ListenAndServe(cfg.Server.Address+":"+cfg.Server.Port, router))
 }
