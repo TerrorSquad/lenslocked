@@ -1,21 +1,21 @@
 package main
 
 import (
-	//This is an alias for the standard library context package.
-	stdctx "context"
-	"fmt"
-	"github.com/terrorsquad/lenslocked/context"
-	"github.com/terrorsquad/lenslocked/models"
+	"github.com/wneessen/go-mail"
+	"log"
+	"os"
 )
 
 func main() {
-	ctx := stdctx.Background()
-	user := models.User{
-		Email: "g.ninkovic@angeltech.rs",
+	m := mail.NewMsg()
+	if err := m.From("toni.sender@example.com"); err != nil {
+		log.Fatalf("failed to set From address: %s", err)
 	}
-	ctx = context.WithUser(ctx, &user)
+	if err := m.To("tina.recipient@example.com"); err != nil {
+		log.Fatalf("failed to set To address: %s", err)
+	}
+	m.Subject("This is my first mail with go-mail!")
+	m.SetBodyString(mail.TypeTextPlain, "Do you like this mail? I certainly do!")
 
-	retreivedUser := context.User(ctx)
-
-	fmt.Println(retreivedUser)
+	m.WriteTo(os.Stdout)
 }
