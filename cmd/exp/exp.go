@@ -19,14 +19,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	email := models.Email{
-		To:        "warhawk@hotmail.rs",
-		From:      "g.ninkovic@angeltech.rs",
-		Subject:   "Test email",
-		Plaintext: "This is a test email",
-		HTML:      "<h1>This is a test email</h1>",
-	}
-	if err := es.Send(email); err != nil {
-		panic(err)
-	}
+	err = es.ForgotPassword("g.ninkovic@angeltech.rs", "https://lenslocked.com/reset?id=1234")
 }
