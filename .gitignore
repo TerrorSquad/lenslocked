@@ -33,3 +33,6 @@ app
 tailwindcss
 dist/*
 bcrypt
+
+# env variables
+.env

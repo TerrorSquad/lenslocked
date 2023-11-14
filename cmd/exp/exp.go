@@ -1,20 +1,30 @@
 package main
 
-import "github.com/terrorsquad/lenslocked/models"
-
-const (
-	port     = 2525
-	host     = "hhhhhhhhhh"
-	username = "uuuuuuuuuuu"
-	password = "ppppppppppp"
+import (
+	"github.com/joho/godotenv"
+	"github.com/terrorsquad/lenslocked/models"
+	"log"
+	"os"
+	"strconv"
 )
 
 func main() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	portString := os.Getenv("SMTP_PORT")
+	port, err := strconv.Atoi(portString)
+	if err != nil {
+		panic(err)
+	}
 	es, err := models.NewEmailService(models.SMTPConfig{
-		Host:     host,
+		Host:     os.Getenv("SMTP_HOST"),
 		Port:     port,
-		Username: username,
-		Password: password,
+		Username: os.Getenv("SMTP_USERNAME"),
+		Password: os.Getenv("SMTP_PASSWORD"),
 	})
 	if err != nil {
 		panic(err)
