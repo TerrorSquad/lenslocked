@@ -121,6 +121,7 @@ func main() {
 	usersController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signup.gohtml")...))
 	usersController.Templates.ForgotPassword = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/forgot-password.gohtml")...))
 	usersController.Templates.CheckYourEmail = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/check-your-email.gohtml")...))
+	usersController.Templates.ResetPassword = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/reset-password.gohtml")...))
 
 	// Setup router and routes
 
@@ -146,6 +147,8 @@ func main() {
 	router.Post("/signout", usersController.ProcessSignOut)
 	router.Get("/forgot-pw", usersController.ForgotPassword)
 	router.Post("/forgot-pw", usersController.ProcessForgotPassword)
+	router.Get("/reset-pw", usersController.ResetPassword)
+	router.Post("/reset-pw", usersController.ProcessResetPassword)
 	router.Route("/users/me", func(r chi.Router) {
 		r.Use(umw.RequireUser)
 		r.Get("/", usersController.CurrentUser)
