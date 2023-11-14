@@ -73,6 +73,7 @@ func main() {
 	var baseLayouts = []string{"layouts/layout-page.gohtml", "layouts/layout-page-tailwind.gohtml"}
 	usersController.Templates.SignIn = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signin.gohtml")...))
 	usersController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signup.gohtml")...))
+	usersController.Templates.ForgotPassword = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/forgot_password.gohtml")...))
 
 	// Setup router and routes
 
@@ -94,8 +95,10 @@ func main() {
 	router.Get("/signup", usersController.New)
 	router.Post("/users", usersController.Create)
 	router.Get("/signin", usersController.SignIn)
-	router.Post("/signin", usersController.Authenticate)
-	router.Post("/signout", usersController.SignOut)
+	router.Post("/signin", usersController.ProcessSignIn)
+	router.Post("/signout", usersController.ProcessSignOut)
+	router.Get("/forgot-pw", usersController.ForgotPassword)
+	router.Post("/forgot-pw", usersController.ProcessForgotPassword)
 	router.Route("/users/me", func(r chi.Router) {
 		r.Use(umw.RequireUser)
 		r.Get("/", usersController.CurrentUser)
