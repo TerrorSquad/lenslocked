@@ -1,9 +1,6 @@
 package main
 
-import (
-	"github.com/wneessen/go-mail"
-	"log"
-)
+import "github.com/terrorsquad/lenslocked/models"
 
 const (
 	port     = 2525
@@ -13,26 +10,23 @@ const (
 )
 
 func main() {
-	m := mail.NewMsg()
-	if err := m.From("toni.sender@example.com"); err != nil {
-		log.Fatalf("failed to set From address: %s", err)
-	}
-	if err := m.To("tina.recipient@example.com"); err != nil {
-		log.Fatalf("failed to set To address: %s", err)
-	}
-	m.Subject("This is my first mail with go-mail!")
-	m.SetBodyString(mail.TypeTextPlain, "Do you like this mail? I certainly do!")
-	c, err := mail.NewClient(
-		host,
-		mail.WithPort(port),
-		mail.WithSMTPAuth(mail.SMTPAuthCramMD5),
-		mail.WithUsername(username),
-		mail.WithPassword(password),
-	)
+	es, err := models.NewEmailService(models.SMTPConfig{
+		Host:     host,
+		Port:     port,
+		Username: username,
+		Password: password,
+	})
 	if err != nil {
-		log.Fatalf("failed to create mail client: %s", err)
+		panic(err)
 	}
-	if err := c.Send(m); err != nil {
-		log.Fatalf("failed to send mail: %s", err)
+	email := models.Email{
+		To:        "warhawk@hotmail.rs",
+		From:      "g.ninkovic@angeltech.rs",
+		Subject:   "Test email",
+		Plaintext: "This is a test email",
+		HTML:      "<h1>This is a test email</h1>",
+	}
+	if err := es.Send(email); err != nil {
+		panic(err)
 	}
 }
