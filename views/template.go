@@ -31,6 +31,9 @@ func ParseFS(fs fs.FS, patterns ...string) (Template, error) {
 			"currentUser": func() (template.HTML, error) {
 				return ``, fmt.Errorf("currentUser not implemented")
 			},
+			"errors": func() (template.HTML, error) {
+				return ``, fmt.Errorf("errors not implemented")
+			},
 		},
 	)
 	tpl, err := tpl.ParseFS(fs, patterns...)
@@ -66,6 +69,9 @@ func (t Template) Execute(w http.ResponseWriter, r *http.Request, data interface
 			},
 			"currentUser": func() (*models.User, error) {
 				return context.User(r.Context()), nil
+			},
+			"errors": func() []string {
+				return []string{}
 			},
 		},
 	)
