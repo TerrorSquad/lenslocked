@@ -51,9 +51,9 @@ type EmailService struct {
 	client *mail.Client
 }
 
-func (es *EmailService) Send(email Email) error {
+func (emailService *EmailService) Send(email Email) error {
 	msg := mail.NewMsg()
-	es.setFrom(msg, email)
+	emailService.setFrom(msg, email)
 	msg.SetAddrHeader("To", email.To)
 	msg.SetGenHeader("Subject", email.Subject)
 
@@ -69,7 +69,7 @@ func (es *EmailService) Send(email Email) error {
 		msg.SetBodyHTMLTemplate(htmlTemplate, nil)
 	}
 
-	err := es.client.DialAndSend(msg)
+	err := emailService.client.DialAndSend(msg)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (es *EmailService) Send(email Email) error {
 	return nil
 }
 
-func (es *EmailService) ForgotPassword(to string, resetURL string) error {
+func (emailService *EmailService) ForgotPassword(to string, resetURL string) error {
 	email := Email{
 		To:      to,
 		Subject: "Reset your password",
@@ -86,20 +86,20 @@ func (es *EmailService) ForgotPassword(to string, resetURL string) error {
 		HTML: fmt.Sprintf(`Click the link below to reset your password:<br>
 <a href="%s">%s</a>`, resetURL, resetURL),
 	}
-	err := es.Send(email)
+	err := emailService.Send(email)
 	if err != nil {
 		return fmt.Errorf("forgot password email: %w", err)
 	}
 	return nil
 }
 
-func (es *EmailService) setFrom(msg *mail.Msg, email Email) {
+func (emailService *EmailService) setFrom(msg *mail.Msg, email Email) {
 	var from string
 	switch {
 	case email.From != "":
 		from = email.From
-	case es.DefaultSender != "":
-		from = es.DefaultSender
+	case emailService.DefaultSender != "":
+		from = emailService.DefaultSender
 	default:
 		from = DefaultSender
 	}
