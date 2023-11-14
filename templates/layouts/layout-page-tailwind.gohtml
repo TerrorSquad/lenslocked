@@ -38,11 +38,11 @@
     {{if errors}}
         <div class="py-4 px-2">
             {{range errors}}
-                <div class="flex bg-blue-100 rounded px-2 py-2 text-blue-800 mb-2">
+                <div class="closable flex bg-blue-100 rounded px-2 py-2 text-blue-800 mb-2">
                     <div class="flex-grow">
                         {{.}}
                     </div>
-                    <a href="">
+                    <a href="#" onclick="closeAlert(event)">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                              stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -166,6 +166,13 @@
                 <p class="text-sm text-gray-700 capitalize xl:text-center">© 2023 All rights reserved </p>
             </div>
         </div>
+        <script>
+            function closeAlert(event) {
+                event.preventDefault();
+                let closable = event.target.closest('.closable');
+                closable.remove();
+            }
+        </script>
     </footer>
     </body>
     </html>
