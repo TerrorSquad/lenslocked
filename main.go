@@ -119,7 +119,8 @@ func main() {
 	var baseLayouts = []string{"layouts/layout-page.gohtml", "layouts/layout-page-tailwind.gohtml"}
 	usersController.Templates.SignIn = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signin.gohtml")...))
 	usersController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signup.gohtml")...))
-	usersController.Templates.ForgotPassword = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/forgot_password.gohtml")...))
+	usersController.Templates.ForgotPassword = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/forgot-password.gohtml")...))
+	usersController.Templates.CheckYourEmail = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/check-your-email.gohtml")...))
 
 	// Setup router and routes
 
