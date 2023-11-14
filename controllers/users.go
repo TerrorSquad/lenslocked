@@ -5,15 +5,20 @@ import (
 	"github.com/terrorsquad/lenslocked/context"
 	"github.com/terrorsquad/lenslocked/models"
 	"net/http"
+	"net/url"
 )
 
 type Users struct {
 	Templates struct {
-		New    Template
-		SignIn Template
+		New            Template
+		SignIn         Template
+		ForgotPassword Template
+		CheckYourEmail Template
 	}
-	UserService    *models.UserService
-	SessionService *models.SessionService
+	UserService          *models.UserService
+	SessionService       *models.SessionService
+	PasswordResetService *models.PasswordResetService
+	EmailService         *models.EmailService
 }
 
 func (u Users) New(w http.ResponseWriter, r *http.Request) {
@@ -94,37 +99,38 @@ func (u Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "User: %s\n", user.Email)
 }
 
-type UserMiddleware struct {
-	SessionService *models.SessionService
+func (u Users) ForgotPassword(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Email string
+	}
+	data.Email = r.FormValue("email")
+	u.Templates.ForgotPassword.Execute(w, r, data)
 }
 
-func (umw UserMiddleware) SetUser(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tokenCookie, err := readCookie(r, CookieSession)
-		if err != nil {
-			fmt.Println(err)
-			next.ServeHTTP(w, r)
-			return
-		}
-		user, err := umw.SessionService.User(tokenCookie)
-		if err != nil {
-			fmt.Println(err)
-			next.ServeHTTP(w, r)
-			return
-		}
-		ctx := context.WithUser(r.Context(), user)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
-func (umw UserMiddleware) RequireUser(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := context.User(r.Context())
-		if user == nil {
-			http.Redirect(w, r, "/signin", http.StatusFound)
-			// TODO: Add a flash message to tell the user why they were redirected.
-			return
-		}
-		next.ServeHTTP(w, r)
-	})
+func (u Users) ProcessForgotPassword(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Email string
+	}
+	data.Email = r.FormValue("email")
+	pwReset, err := u.PasswordResetService.Create(data.Email)
+	if err != nil {
+		// TODO: Handle other cases in the future
+		// e.g. user does not exist
+		fmt.Println(err)
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+	vals := url.Values{
+		"token": []string{pwReset.Token},
+	}
+	resetURL := "https://localhost:8080/reset-pw?" + vals.Encode()
+	err = u.EmailService.ForgotPassword(data.Email, resetURL)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+	// Don't render the reset token here. We need the user to confirm that they have received the email.
+	// Render a page that tells them to check their email.
+	u.Templates.CheckYourEmail.Execute(w, r, data)
 }
