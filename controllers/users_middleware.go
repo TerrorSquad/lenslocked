@@ -15,7 +15,7 @@ func (umw UserMiddleware) SetUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenCookie, err := readCookie(r, CookieSession)
 		if err != nil {
-			fmt.Println(err)
+			//fmt.Println(err)
 			next.ServeHTTP(w, r)
 			return
 		}

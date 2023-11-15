@@ -66,6 +66,7 @@ func loadEnvConfig() (config, error) {
 }
 
 func main() {
+	// Load environment variables
 	cfg, err := loadEnvConfig()
 	if err != nil {
 		panic(err)
