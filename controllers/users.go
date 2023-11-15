@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"github.com/terrorsquad/lenslocked/context"
+	"github.com/terrorsquad/lenslocked/errors"
 	"github.com/terrorsquad/lenslocked/models"
 	"net/http"
 	"net/url"
@@ -38,9 +39,10 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	user, err := u.UserService.Create(data.Email, password)
 	if err != nil {
+		if errors.Is(err, models.ErrEmailTaken) {
+			err = errors.Public(err, "That email address is already associated with an account")
+		}
 		u.Templates.New.Execute(w, r, data, err)
-		fmt.Println(err)
-		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
 	session, err := u.SessionService.Create(user.ID)
