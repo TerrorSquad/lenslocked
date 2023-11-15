@@ -54,6 +54,7 @@ func (service *GalleryService) ByUserID(userID uint) ([]Gallery, error) {
 		}
 		galleries = append(galleries, gallery)
 	}
+	// Checks for errors encountered during iteration that were not otherwise detected by rows.Scan().
 	if rows.Err() != nil {
 		return nil, fmt.Errorf("query galleries by user: %w", err)
 	}
@@ -64,6 +65,14 @@ func (service *GalleryService) Update(gallery Gallery) error {
 	_, err := service.DB.Exec(`UPDATE galleries SET title = $1 WHERE id = $2;`, gallery.Title, gallery.ID)
 	if err != nil {
 		return fmt.Errorf("update gallery: %w", err)
+	}
+	return nil
+}
+
+func (service *GalleryService) Delete(id uint) error {
+	_, err := service.DB.Exec(`DELETE FROM galleries WHERE id = $1;`, id)
+	if err != nil {
+		return fmt.Errorf("delete gallery: %w", err)
 	}
 	return nil
 }
