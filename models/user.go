@@ -17,10 +17,6 @@ type User struct {
 	PasswordHash string
 }
 
-var (
-	ErrEmailTaken = errors.New("models: email address is already taken")
-)
-
 type UserService struct {
 	DB *sql.DB
 }
