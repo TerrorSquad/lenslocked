@@ -1,15 +1,12 @@
 {{define "page"}}
-    <div class="py-12 flex justify-center">
-        <div class="px-8 py-8 bg-white rounded shadow">
-            <h1 class="text-3xl text-center font-bold text-gray-700 pt-4 pb-5">{{.Title}}</h1>
-            <div class="flex">
-                {{range .Images}}
-                    <div class="flex-1">
-                        <img src="{{.}}" class="rounded shadow">
-                    </div>
-                {{end}}
-            </div>
-        </div>
+    <div class="p-8 w-full">
+        <h1 class="pt-4 pb-8 text-3xl font-bold text-gray-800">{{.Title}}</h1>
     </div>
-
+    <div class="columns-4 gap-4 space-y-4 p-8">
+        {{range .Images}}
+            <div class="h-min w-full">
+                <img class="h-full w-full object-cover rounded shadow" src="{{.}}" alt="image">
+            </div>
+        {{end}}
+    </div>
 {{end}}

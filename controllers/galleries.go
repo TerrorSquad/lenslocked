@@ -66,8 +66,10 @@ func (galleries *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 
 	data.ID = gallery.ID
 	data.Title = gallery.Title
-	data.Images = make([]string, 20)
-	for i := 0; i < 20; i++ {
+
+	numberOfImages := 10
+	data.Images = make([]string, numberOfImages)
+	for i := 0; i < numberOfImages; i++ {
 		w, h := rand.Intn(500)+200, rand.Intn(500)+200
 		catImageUrl := fmt.Sprintf("https://placekitten.com/%d/%d", w, h)
 		data.Images[i] = catImageUrl
