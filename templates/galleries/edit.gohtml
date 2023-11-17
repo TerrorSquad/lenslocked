@@ -2,7 +2,7 @@
     <div class="py-12 flex justify-center">
         <div class="px-8 py-8 bg-white rounded shadow">
             <h1 class="text-3xl text-center font-bold text-gray-700 pt-4 pb-5">Edit gallery</h1>
-            <form method="POST" action="/galleries/{{.ID}}/" class="flex flex-col mx-auto pt-4">
+            <form method="POST" action="/galleries/{{.ID}}" class="flex flex-col mx-auto pt-4">
 
                 <div class="hidden">
                     {{csrfField}}
@@ -24,10 +24,23 @@
 
                 <div class="mt-8">
                     <button class="bg-blue-500 hover:bg-blue-700 p-2 rounded text-lg text-white w-full" type="submit">
-                        Create gallery
+                        Save
                     </button>
                 </div>
             </form>
+            <div class="py-4">
+                <h2>Dangeros actions</h2>
+                <form method="POST" action="/galleries/{{.ID}}/delete" class="flex flex-col mx-auto pt-4">
+                    <div class="hidden">
+                        {{csrfField}}
+                    </div>
+                    <div class="mt-8">
+                        <button class="bg-red-500 hover:bg-red-700 p-2 rounded text-lg text-white w-full" type="submit">
+                            Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

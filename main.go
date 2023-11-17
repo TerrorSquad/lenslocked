@@ -173,6 +173,8 @@ func main() {
 			r.Get("/new", galleriesController.New)
 			r.Post("/", galleriesController.Create)
 			r.Get("/{id}/edit", galleriesController.Edit)
+			r.Post("/{id}", galleriesController.Update)
+			r.Post("/{id}/delete", galleriesController.Delete)
 		})
 	})
 

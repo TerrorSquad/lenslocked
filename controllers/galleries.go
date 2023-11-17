@@ -65,6 +65,41 @@ func (galleries *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 func (galleries *Galleries) Edit(w http.ResponseWriter, r *http.Request) {
 	var data struct {
 		Title string
+		ID    int
+	}
+	var galleryId, err = strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		// TODO: Handle this error better.
+		http.Error(w, "Invalid gallery ID", http.StatusInternalServerError)
+		return
+	}
+	var gallery *models.Gallery
+	gallery, err = galleries.GalleryService.ByID(galleryId)
+	if err != nil {
+		if errors.Is(err, models.ErrNotFound) {
+			err = errors.Public(err, fmt.Sprintf("Gallery with the ID %v was not found.", galleryId))
+			galleries.Templates.Edit.Execute(w, r, data, err)
+			return
+		}
+		err = errors.Public(err, fmt.Sprintf("Something went wrong"))
+		galleries.Templates.Edit.Execute(w, r, data, err)
+		return
+	}
+	user := context.User(r.Context())
+	if gallery.UserID != user.ID {
+		// TODO: Handle this error better.
+		http.Error(w, "You do not have permission to edit this gallery.", http.StatusForbidden)
+		return
+	}
+	data.ID = gallery.ID
+	data.Title = gallery.Title
+
+	galleries.Templates.Edit.Execute(w, r, data)
+}
+
+func (galleries *Galleries) Update(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Title string
 		ID    string
 	}
 	var galleryId, err = strconv.Atoi(chi.URLParam(r, "id"))
@@ -91,7 +126,52 @@ func (galleries *Galleries) Edit(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "You do not have permission to edit this gallery.", http.StatusForbidden)
 		return
 	}
-	data.Title = gallery.Title
+	data.Title = r.FormValue("title")
+	gallery.Title = data.Title
+	err = galleries.GalleryService.Update(*gallery)
+	if err != nil {
+		err = errors.Public(err, "Gallery could not be updated.")
+		galleries.Templates.Edit.Execute(w, r, data, err)
+		return
+	}
+	editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
+	http.Redirect(w, r, editPath, http.StatusFound)
+}
 
-	galleries.Templates.Edit.Execute(w, r, data)
+func (galleries *Galleries) Delete(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Title string
+		ID    string
+	}
+	var galleryId, err = strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		// TODO: Handle this error better.
+		http.Error(w, "Invalid gallery ID", http.StatusInternalServerError)
+		return
+	}
+	var gallery *models.Gallery
+	gallery, err = galleries.GalleryService.ByID(galleryId)
+	if err != nil {
+		if errors.Is(err, models.ErrNotFound) {
+			err = errors.Public(err, fmt.Sprintf("Gallery with the ID %v was not found.", galleryId))
+			galleries.Templates.Edit.Execute(w, r, data, err)
+			return
+		}
+		err = errors.Public(err, fmt.Sprintf("Something went wrong"))
+		galleries.Templates.Edit.Execute(w, r, data, err)
+		return
+	}
+	user := context.User(r.Context())
+	if gallery.UserID != user.ID {
+		// TODO: Handle this error better.
+		http.Error(w, "You do not have permission to delete this gallery.", http.StatusForbidden)
+		return
+	}
+	err = galleries.GalleryService.Delete(galleryId)
+	if err != nil {
+		err = errors.Public(err, "Gallery could not be deleted.")
+		galleries.Templates.Edit.Execute(w, r, data, err)
+		return
+	}
+	http.Redirect(w, r, "/galleries", http.StatusFound)
 }
