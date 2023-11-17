@@ -13,5 +13,9 @@ type Galleries struct {
 }
 
 func (galleries *Galleries) New(w http.ResponseWriter, r *http.Request) {
-	galleries.Templates.New.Execute(w, r, nil)
+	var data struct {
+		Title string
+	}
+	data.Title = r.FormValue("title")
+	galleries.Templates.New.Execute(w, r, data)
 }
