@@ -69,19 +69,14 @@ func (galleries *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 }
 
 func (galleries *Galleries) Edit(w http.ResponseWriter, r *http.Request) {
-	var data struct {
-		Title string
-		ID    int
-	}
-	gallery, err := galleries.galleryById(w, r)
+	gallery, err := galleries.galleryById(w, r, userMustOwnGallery)
 	if err != nil {
 		return
 	}
-	user := context.User(r.Context())
-	if gallery.UserID != user.ID {
-		// TODO: Handle this error better.
-		http.Error(w, "You do not have permission to edit this gallery.", http.StatusForbidden)
-		return
+
+	var data struct {
+		Title string
+		ID    int
 	}
 	data.ID = gallery.ID
 	data.Title = gallery.Title
@@ -90,19 +85,14 @@ func (galleries *Galleries) Edit(w http.ResponseWriter, r *http.Request) {
 }
 
 func (galleries *Galleries) Update(w http.ResponseWriter, r *http.Request) {
-	var data struct {
-		Title string
-		ID    string
-	}
-	gallery, err := galleries.galleryById(w, r)
+	gallery, err := galleries.galleryById(w, r, userMustOwnGallery)
 	if err != nil {
 		return
 	}
-	user := context.User(r.Context())
-	if gallery.UserID != user.ID {
-		// TODO: Handle this error better.
-		http.Error(w, "You do not have permission to edit this gallery.", http.StatusForbidden)
-		return
+
+	var data struct {
+		Title string
+		ID    string
 	}
 	data.Title = r.FormValue("title")
 	gallery.Title = data.Title
@@ -117,37 +107,18 @@ func (galleries *Galleries) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (galleries *Galleries) Delete(w http.ResponseWriter, r *http.Request) {
-	var data struct {
-		Title string
-		ID    string
-	}
-	var galleryId, err = strconv.Atoi(chi.URLParam(r, "id"))
+	gallery, err := galleries.galleryById(w, r, userMustOwnGallery)
 	if err != nil {
-		// TODO: Handle this error better.
-		http.Error(w, "Invalid gallery ID", http.StatusInternalServerError)
 		return
 	}
-	var gallery *models.Gallery
-	gallery, err = galleries.GalleryService.ByID(galleryId)
-	if err != nil {
-		if errors.Is(err, models.ErrNotFound) {
-			err = errors.Public(err, fmt.Sprintf("Gallery with the ID %v was not found.", galleryId))
-			galleries.Templates.Edit.Execute(w, r, data, err)
-			return
-		}
-		err = errors.Public(err, fmt.Sprintf("Something went wrong"))
-		galleries.Templates.Edit.Execute(w, r, data, err)
-		return
-	}
-	user := context.User(r.Context())
-	if gallery.UserID != user.ID {
-		// TODO: Handle this error better.
-		http.Error(w, "You do not have permission to delete this gallery.", http.StatusForbidden)
-		return
-	}
-	err = galleries.GalleryService.Delete(galleryId)
+
+	err = galleries.GalleryService.Delete(gallery.ID)
 	if err != nil {
 		err = errors.Public(err, "Gallery could not be deleted.")
+		var data struct {
+			Title string
+			ID    string
+		}
 		galleries.Templates.Edit.Execute(w, r, data, err)
 		return
 	}
@@ -181,7 +152,9 @@ func (galleries *Galleries) Index(w http.ResponseWriter, r *http.Request) {
 	galleries.Templates.Index.Execute(w, r, data)
 }
 
-func (galleries Galleries) galleryById(w http.ResponseWriter, r *http.Request) (*models.Gallery, error) {
+type galleryOption func(http.ResponseWriter, *http.Request, *models.Gallery) error
+
+func (galleries *Galleries) galleryById(w http.ResponseWriter, r *http.Request, options ...galleryOption) (*models.Gallery, error) {
 	var galleryId, err = strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		// TODO: Handle this error better.
@@ -198,5 +171,21 @@ func (galleries Galleries) galleryById(w http.ResponseWriter, r *http.Request) (
 		http.Error(w, "Something went wrong", http.StatusNotFound)
 		return nil, err
 	}
+	for _, option := range options {
+		err = option(w, r, gallery)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return gallery, nil
+}
+
+func userMustOwnGallery(w http.ResponseWriter, r *http.Request, gallery *models.Gallery) error {
+	user := context.User(r.Context())
+
+	if gallery.UserID != user.ID {
+		http.Error(w, "You do not have permission to edit this gallery.", http.StatusForbidden)
+		return errors.Public(nil, "You do not have access to this gallery.")
+	}
+	return nil
 }
