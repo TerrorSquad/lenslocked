@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/terrorsquad/lenslocked/errors"
+	"path/filepath"
 )
 
 type Gallery struct {
@@ -14,6 +15,10 @@ type Gallery struct {
 
 type GalleryService struct {
 	DB *sql.DB
+
+	// ImagesDir is used to tell the GalleryService where to store and locate the images for a gallery.
+	// If not set, it will default to "images/" directory.
+	ImagesDir string
 }
 
 func (service *GalleryService) Create(userID int, title string) (*Gallery, error) {
@@ -81,4 +86,11 @@ func (service *GalleryService) Delete(id int) error {
 		return fmt.Errorf("delete gallery: %w", err)
 	}
 	return nil
+}
+func (service *GalleryService) galleryDir(id int) string {
+	images := service.ImagesDir
+	if images == "" {
+		images = "images"
+	}
+	return filepath.Join(images, fmt.Sprintf("gallery-%d", id))
 }
