@@ -51,19 +51,10 @@ func (galleries *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 		Title  string
 		Images []string
 	}
-	var galleryId, err = strconv.Atoi(chi.URLParam(r, "id"))
-	var gallery *models.Gallery
-	gallery, err = galleries.GalleryService.ByID(galleryId)
+	gallery, err := galleries.galleryById(w, r)
 	if err != nil {
-		if errors.Is(err, models.ErrNotFound) {
-			err = errors.Public(err, fmt.Sprintf("Gallery with the ID %v was not found.", galleryId))
-			galleries.Templates.Show.Execute(w, r, data, err)
-		} else {
-			err = errors.Public(err, fmt.Sprintf("Something went wrong"))
-			galleries.Templates.Show.Execute(w, r, data, err)
-		}
+		return
 	}
-
 	data.ID = gallery.ID
 	data.Title = gallery.Title
 
@@ -82,22 +73,8 @@ func (galleries *Galleries) Edit(w http.ResponseWriter, r *http.Request) {
 		Title string
 		ID    int
 	}
-	var galleryId, err = strconv.Atoi(chi.URLParam(r, "id"))
+	gallery, err := galleries.galleryById(w, r)
 	if err != nil {
-		// TODO: Handle this error better.
-		http.Error(w, "Invalid gallery ID", http.StatusInternalServerError)
-		return
-	}
-	var gallery *models.Gallery
-	gallery, err = galleries.GalleryService.ByID(galleryId)
-	if err != nil {
-		if errors.Is(err, models.ErrNotFound) {
-			err = errors.Public(err, fmt.Sprintf("Gallery with the ID %v was not found.", galleryId))
-			galleries.Templates.Edit.Execute(w, r, data, err)
-			return
-		}
-		err = errors.Public(err, fmt.Sprintf("Something went wrong"))
-		galleries.Templates.Edit.Execute(w, r, data, err)
 		return
 	}
 	user := context.User(r.Context())
@@ -117,22 +94,8 @@ func (galleries *Galleries) Update(w http.ResponseWriter, r *http.Request) {
 		Title string
 		ID    string
 	}
-	var galleryId, err = strconv.Atoi(chi.URLParam(r, "id"))
+	gallery, err := galleries.galleryById(w, r)
 	if err != nil {
-		// TODO: Handle this error better.
-		http.Error(w, "Invalid gallery ID", http.StatusInternalServerError)
-		return
-	}
-	var gallery *models.Gallery
-	gallery, err = galleries.GalleryService.ByID(galleryId)
-	if err != nil {
-		if errors.Is(err, models.ErrNotFound) {
-			err = errors.Public(err, fmt.Sprintf("Gallery with the ID %v was not found.", galleryId))
-			galleries.Templates.Edit.Execute(w, r, data, err)
-			return
-		}
-		err = errors.Public(err, fmt.Sprintf("Something went wrong"))
-		galleries.Templates.Edit.Execute(w, r, data, err)
 		return
 	}
 	user := context.User(r.Context())
@@ -216,4 +179,24 @@ func (galleries *Galleries) Index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	galleries.Templates.Index.Execute(w, r, data)
+}
+
+func (galleries Galleries) galleryById(w http.ResponseWriter, r *http.Request) (*models.Gallery, error) {
+	var galleryId, err = strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		// TODO: Handle this error better.
+		http.Error(w, "Invalid gallery ID", http.StatusInternalServerError)
+		return nil, err
+	}
+	var gallery *models.Gallery
+	gallery, err = galleries.GalleryService.ByID(galleryId)
+	if err != nil {
+		if errors.Is(err, models.ErrNotFound) {
+			http.Error(w, "Gallery not found", http.StatusNotFound)
+			return nil, err
+		}
+		http.Error(w, "Something went wrong", http.StatusNotFound)
+		return nil, err
+	}
+	return gallery, nil
 }
