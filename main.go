@@ -96,6 +96,9 @@ func main() {
 	}
 
 	emailService, err := models.NewEmailService(cfg.SMTP)
+	galleryService := &models.GalleryService{
+		DB: db,
+	}
 
 	// Setup middleware
 
@@ -107,6 +110,7 @@ func main() {
 	csrfMw := csrf.Protect(
 		csrfKey,
 		csrf.Secure(cfg.CSRF.Secure),
+		csrf.Path("/"),
 	)
 
 	// Setup controllers
@@ -117,12 +121,20 @@ func main() {
 		PasswordResetService: passwordResetService,
 		EmailService:         emailService,
 	}
+	galleriesController := controllers.Galleries{
+		GalleryService: galleryService,
+	}
 	var baseLayouts = []string{"layouts/layout-page.gohtml", "layouts/layout-page-tailwind.gohtml"}
 	usersController.Templates.SignIn = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signin.gohtml")...))
 	usersController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signup.gohtml")...))
 	usersController.Templates.ForgotPassword = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/forgot-password.gohtml")...))
 	usersController.Templates.CheckYourEmail = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/check-your-email.gohtml")...))
 	usersController.Templates.ResetPassword = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/reset-password.gohtml")...))
+
+	galleriesController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/new.gohtml")...))
+	galleriesController.Templates.Edit = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/edit.gohtml")...))
+	galleriesController.Templates.Show = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/show.gohtml")...))
+	galleriesController.Templates.Index = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/index.gohtml")...))
 
 	// Setup router and routes
 
@@ -154,6 +166,20 @@ func main() {
 		r.Use(umw.RequireUser)
 		r.Get("/", usersController.CurrentUser)
 	})
+
+	router.Route("/galleries", func(r chi.Router) {
+		r.Get("/{id}", galleriesController.Show)
+		r.Group(func(r chi.Router) {
+			r.Use(umw.RequireUser)
+			r.Get("/new", galleriesController.New)
+			r.Get("/", galleriesController.Index)
+			r.Post("/", galleriesController.Create)
+			r.Get("/{id}/edit", galleriesController.Edit)
+			r.Post("/{id}", galleriesController.Update)
+			r.Post("/{id}/delete", galleriesController.Delete)
+		})
+	})
+
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
 
 	fmt.Println("Server is running on port: " + cfg.Server.Port)

@@ -15,8 +15,8 @@ const (
 )
 
 type PasswordReset struct {
-	ID     uint
-	UserID uint
+	ID     int
+	UserID int
 	// Token is only set when a password reset is created.
 	Token     string
 	TokenHash string
@@ -36,7 +36,7 @@ type PasswordResetService struct {
 
 func (passwordResetService *PasswordResetService) Create(email string) (*PasswordReset, error) {
 	email = strings.ToLower(email)
-	var userId uint
+	var userId int
 	row := passwordResetService.DB.QueryRow(`SELECT id FROM users WHERE email = $1;`, email)
 	err := row.Scan(&userId)
 	if err != nil {
@@ -65,7 +65,7 @@ func (passwordResetService *PasswordResetService) Create(email string) (*Passwor
 	row = passwordResetService.DB.QueryRow(`
 			INSERT INTO password_resets (user_id, token_hash, expires_at)
 			VALUES ($1, $2, $3) ON CONFLICT (user_id) DO
-			UPDATE SET token_hash = $2 RETURNING id;`,
+			UPDATE SET token_hash = $2, expires_at = $3 RETURNING id;`,
 		passwordReset.UserID, passwordReset.TokenHash, passwordReset.ExpiresAt,
 	)
 	err = row.Scan(&passwordReset.ID)
@@ -115,7 +115,7 @@ func (passwordResetService *PasswordResetService) hash(token string) string {
 	return base64.URLEncoding.EncodeToString(tokenHash[:])
 }
 
-func (passwordResetService *PasswordResetService) delete(passwordId uint) error {
+func (passwordResetService *PasswordResetService) delete(passwordId int) error {
 	_, err := passwordResetService.DB.Exec(`
 		DELETE FROM password_resets WHERE id = $1;`, passwordId)
 	if err != nil {
