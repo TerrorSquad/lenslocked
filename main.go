@@ -134,6 +134,7 @@ func main() {
 	galleriesController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/new.gohtml")...))
 	galleriesController.Templates.Edit = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/edit.gohtml")...))
 	galleriesController.Templates.Show = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/show.gohtml")...))
+	galleriesController.Templates.Index = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/index.gohtml")...))
 
 	// Setup router and routes
 
@@ -171,6 +172,7 @@ func main() {
 		r.Group(func(r chi.Router) {
 			r.Use(umw.RequireUser)
 			r.Get("/new", galleriesController.New)
+			r.Get("/", galleriesController.Index)
 			r.Post("/", galleriesController.Create)
 			r.Get("/{id}/edit", galleriesController.Edit)
 			r.Post("/{id}", galleriesController.Update)

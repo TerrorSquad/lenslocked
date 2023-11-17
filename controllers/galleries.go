@@ -12,9 +12,10 @@ import (
 
 type Galleries struct {
 	Templates struct {
-		New  Template
-		Edit Template
-		Show Template
+		Index Template
+		New   Template
+		Edit  Template
+		Show  Template
 	}
 	GalleryService *models.GalleryService
 }
@@ -174,4 +175,31 @@ func (galleries *Galleries) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/galleries", http.StatusFound)
+}
+
+func (galleries *Galleries) Index(w http.ResponseWriter, r *http.Request) {
+	type Gallery struct {
+		ID    int
+		Title string
+	}
+	var data struct {
+		Galleries []Gallery
+	}
+	user := context.User(r.Context())
+
+	userGalleries, err := galleries.GalleryService.ByUserID(user.ID)
+	if err != nil {
+		err = errors.Public(err, "Galleries could not be retrieved.")
+		galleries.Templates.Index.Execute(w, r, data, err)
+		return
+	}
+	data.Galleries = make([]Gallery, len(userGalleries))
+	for i, gallery := range userGalleries {
+		data.Galleries[i] = Gallery{
+			ID:    gallery.ID,
+			Title: gallery.Title,
+		}
+	}
+
+	galleries.Templates.Index.Execute(w, r, data)
 }

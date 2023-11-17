@@ -1,0 +1,49 @@
+{{define "page"}}
+    <div class="py-12 flex justify-center">
+        <div class="px-8 py-8 bg-white rounded shadow">
+            <h1 class="text-3xl text-center font-bold text-gray-700 pt-4 pb-5">Your galleries</h1>
+            <!-- TODO: Render galleries in a table with buttons to view, edit and delete a gallery from .Galleries slice -->
+
+            <table class="w-full table-fixed">
+                <thead>
+                <tr>
+                    <th class="p-2 text-left w-24">ID</th>
+                    <th class="p-2 text-left">Title</th>
+                    <th class="p-2 text-left w-64">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{range .Galleries}}
+                    <tr>
+
+                        <td class="p-2 text-left">{{.ID}}</td>
+                        <td class="p-2 text-left"><a href="/galleries/{{.ID}}">{{.Title}}</a></td>
+                        <td class="p-2 text-left">
+                            <div class="flex justify-around py-4">
+                                <a href="/galleries/{{.ID}}"
+                                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">View</a>
+                                <a href="/galleries/{{.ID}}/edit"
+                                   class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Edit</a>
+                                <form action="/galleries/{{.ID}}/delete" method="POST">
+                                    <div class="hidden">
+                                        {{csrfField}}
+                                    </div>
+                                    <button type="submit"
+                                            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {{end}}
+                </tbody>
+            </table>
+            <div class="py-4">
+                <a href="/galleries/new"
+                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create new gallery</a>
+            </div>
+        </div>
+    </div>
+
+{{end}}
