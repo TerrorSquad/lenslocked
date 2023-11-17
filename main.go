@@ -132,6 +132,7 @@ func main() {
 	usersController.Templates.ResetPassword = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/reset-password.gohtml")...))
 
 	galleriesController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/new.gohtml")...))
+	galleriesController.Templates.Edit = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/edit.gohtml")...))
 	galleriesController.Templates.Show = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/show.gohtml")...))
 
 	// Setup router and routes
@@ -171,6 +172,7 @@ func main() {
 			r.Use(umw.RequireUser)
 			r.Get("/new", galleriesController.New)
 			r.Post("/", galleriesController.Create)
+			r.Get("/{id}/edit", galleriesController.Edit)
 		})
 	})
 

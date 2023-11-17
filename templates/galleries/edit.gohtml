@@ -1,8 +1,8 @@
 {{define "page"}}
     <div class="py-12 flex justify-center">
         <div class="px-8 py-8 bg-white rounded shadow">
-            <h1 class="text-3xl text-center font-bold text-gray-700 pt-4 pb-5">New gallery</h1>
-            <form method="POST" action="/galleries/" class="flex flex-col mx-auto pt-4">
+            <h1 class="text-3xl text-center font-bold text-gray-700 pt-4 pb-5">Edit gallery</h1>
+            <form method="POST" action="/galleries/{{.ID}}/" class="flex flex-col mx-auto pt-4">
 
                 <div class="hidden">
                     {{csrfField}}

@@ -13,6 +13,7 @@ import (
 type Galleries struct {
 	Templates struct {
 		New  Template
+		Edit Template
 		Show Template
 	}
 	GalleryService *models.GalleryService
@@ -38,7 +39,8 @@ func (galleries *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 		galleries.Templates.New.Execute(w, r, data, err)
 		return
 	}
-	http.Redirect(w, r, "/galleries/"+strconv.Itoa(gallery.ID), http.StatusFound)
+	editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
+	http.Redirect(w, r, editPath, http.StatusFound)
 }
 
 func (galleries *Galleries) Show(w http.ResponseWriter, r *http.Request) {
@@ -58,4 +60,38 @@ func (galleries *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 	}
 
 	galleries.Templates.Show.Execute(w, r, gallery)
+}
+
+func (galleries *Galleries) Edit(w http.ResponseWriter, r *http.Request) {
+	var data struct {
+		Title string
+		ID    string
+	}
+	var galleryId, err = strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		// TODO: Handle this error better.
+		http.Error(w, "Invalid gallery ID", http.StatusInternalServerError)
+		return
+	}
+	var gallery *models.Gallery
+	gallery, err = galleries.GalleryService.ByID(galleryId)
+	if err != nil {
+		if errors.Is(err, models.ErrNotFound) {
+			err = errors.Public(err, fmt.Sprintf("Gallery with the ID %v was not found.", galleryId))
+			galleries.Templates.Edit.Execute(w, r, data, err)
+			return
+		}
+		err = errors.Public(err, fmt.Sprintf("Something went wrong"))
+		galleries.Templates.Edit.Execute(w, r, data, err)
+		return
+	}
+	user := context.User(r.Context())
+	if gallery.UserID != user.ID {
+		// TODO: Handle this error better.
+		http.Error(w, "You do not have permission to edit this gallery.", http.StatusForbidden)
+		return
+	}
+	data.Title = gallery.Title
+
+	galleries.Templates.Edit.Execute(w, r, data)
 }
