@@ -110,6 +110,7 @@ func main() {
 	csrfMw := csrf.Protect(
 		csrfKey,
 		csrf.Secure(cfg.CSRF.Secure),
+		csrf.Path("/"),
 	)
 
 	// Setup controllers
@@ -131,6 +132,7 @@ func main() {
 	usersController.Templates.ResetPassword = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/reset-password.gohtml")...))
 
 	galleriesController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/new.gohtml")...))
+	galleriesController.Templates.Show = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/show.gohtml")...))
 
 	// Setup router and routes
 
@@ -163,7 +165,14 @@ func main() {
 		r.Get("/", usersController.CurrentUser)
 	})
 
-	router.Get("/galleries/new", galleriesController.New)
+	router.Route("/galleries", func(r chi.Router) {
+		r.Get("/{id}", galleriesController.Show)
+		r.Group(func(r chi.Router) {
+			r.Use(umw.RequireUser)
+			r.Get("/new", galleriesController.New)
+			r.Post("/", galleriesController.Create)
+		})
+	})
 
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
 

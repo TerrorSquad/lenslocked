@@ -14,8 +14,8 @@ const (
 )
 
 type Session struct {
-	ID     uint
-	UserID uint
+	ID     int
+	UserID int
 	// Token is only set when creating a new session. When looking up a session
 	// this will be empty, as we only store the hashed version of the token.
 	Token     string
@@ -30,7 +30,7 @@ type SessionService struct {
 	BytesPerToken int
 }
 
-func (sessionService *SessionService) Create(userID uint) (*Session, error) {
+func (sessionService *SessionService) Create(userID int) (*Session, error) {
 	bytesPerToken := sessionService.BytesPerToken
 	if bytesPerToken < MinBytesPerToken {
 		bytesPerToken = MinBytesPerToken

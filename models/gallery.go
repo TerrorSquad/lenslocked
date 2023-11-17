@@ -7,8 +7,8 @@ import (
 )
 
 type Gallery struct {
-	ID     uint
-	UserID uint
+	ID     int
+	UserID int
 	Title  string
 }
 
@@ -16,7 +16,7 @@ type GalleryService struct {
 	DB *sql.DB
 }
 
-func (service *GalleryService) Create(userID uint, title string) (*Gallery, error) {
+func (service *GalleryService) Create(userID int, title string) (*Gallery, error) {
 	gallery := Gallery{UserID: userID, Title: title}
 	row := service.DB.QueryRow(`INSERT INTO galleries (user_id, title) VALUES ($1, $2) RETURNING id;`, gallery.UserID, gallery.Title)
 	err := row.Scan(&gallery.ID)
@@ -26,7 +26,13 @@ func (service *GalleryService) Create(userID uint, title string) (*Gallery, erro
 	return &gallery, nil
 }
 
-func (service *GalleryService) ByID(id uint) (*Gallery, error) {
+// ByID will look up a gallery by the provided ID.
+//
+// Possible errors:
+//
+// - ErrNotFound - No gallery exists with the provided ID.
+// - Other errors that may be returned from the database.
+func (service *GalleryService) ByID(id int) (*Gallery, error) {
 	// TODO: Add validation to ensure that the gallery ID is not 0.
 	gallery := Gallery{ID: id}
 	row := service.DB.QueryRow(`SELECT user_id, title FROM galleries WHERE id = $1;`, gallery.ID)
@@ -40,7 +46,7 @@ func (service *GalleryService) ByID(id uint) (*Gallery, error) {
 	return &gallery, nil
 }
 
-func (service *GalleryService) ByUserID(userID uint) ([]Gallery, error) {
+func (service *GalleryService) ByUserID(userID int) ([]Gallery, error) {
 	rows, err := service.DB.Query(`SELECT id, title FROM galleries WHERE user_id = $1;`, userID)
 	if err != nil {
 		return nil, fmt.Errorf("query galleries by user ID: %w", err)
@@ -69,7 +75,7 @@ func (service *GalleryService) Update(gallery Gallery) error {
 	return nil
 }
 
-func (service *GalleryService) Delete(id uint) error {
+func (service *GalleryService) Delete(id int) error {
 	_, err := service.DB.Exec(`DELETE FROM galleries WHERE id = $1;`, id)
 	if err != nil {
 		return fmt.Errorf("delete gallery: %w", err)
