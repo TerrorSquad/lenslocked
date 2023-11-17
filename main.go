@@ -96,6 +96,9 @@ func main() {
 	}
 
 	emailService, err := models.NewEmailService(cfg.SMTP)
+	galleryService := &models.GalleryService{
+		DB: db,
+	}
 
 	// Setup middleware
 
@@ -117,12 +120,17 @@ func main() {
 		PasswordResetService: passwordResetService,
 		EmailService:         emailService,
 	}
+	galleriesController := controllers.Galleries{
+		GalleryService: galleryService,
+	}
 	var baseLayouts = []string{"layouts/layout-page.gohtml", "layouts/layout-page-tailwind.gohtml"}
 	usersController.Templates.SignIn = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signin.gohtml")...))
 	usersController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signup.gohtml")...))
 	usersController.Templates.ForgotPassword = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/forgot-password.gohtml")...))
 	usersController.Templates.CheckYourEmail = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/check-your-email.gohtml")...))
 	usersController.Templates.ResetPassword = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/reset-password.gohtml")...))
+
+	galleriesController.Templates.New = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/new.gohtml")...))
 
 	// Setup router and routes
 
@@ -154,6 +162,9 @@ func main() {
 		r.Use(umw.RequireUser)
 		r.Get("/", usersController.CurrentUser)
 	})
+
+	router.Get("/galleries/new", galleriesController.New)
+
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
 
 	fmt.Println("Server is running on port: " + cfg.Server.Port)
