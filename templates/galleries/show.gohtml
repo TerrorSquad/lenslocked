@@ -2,7 +2,13 @@
     <div class="py-12 flex justify-center">
         <div class="px-8 py-8 bg-white rounded shadow">
             <h1 class="text-3xl text-center font-bold text-gray-700 pt-4 pb-5">{{.Title}}</h1>
-            <!--TODO: Render gallery images below -->
+            <div class="flex">
+                {{range .Images}}
+                    <div class="flex-1">
+                        <img src="{{.}}" class="rounded shadow">
+                    </div>
+                {{end}}
+            </div>
         </div>
     </div>
 

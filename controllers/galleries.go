@@ -6,16 +6,17 @@ import (
 	"github.com/terrorsquad/lenslocked/context"
 	"github.com/terrorsquad/lenslocked/errors"
 	"github.com/terrorsquad/lenslocked/models"
+	"math/rand"
 	"net/http"
 	"strconv"
 )
 
 type Galleries struct {
 	Templates struct {
-		Index Template
-		New   Template
-		Edit  Template
 		Show  Template
+		New   Template
+		Index Template
+		Edit  Template
 	}
 	GalleryService *models.GalleryService
 }
@@ -46,6 +47,9 @@ func (galleries *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 
 func (galleries *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 	var data struct {
+		ID     int
+		Title  string
+		Images []string
 	}
 	var galleryId, err = strconv.Atoi(chi.URLParam(r, "id"))
 	var gallery *models.Gallery
@@ -60,7 +64,15 @@ func (galleries *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	galleries.Templates.Show.Execute(w, r, gallery)
+	data.ID = gallery.ID
+	data.Title = gallery.Title
+	data.Images = make([]string, 20)
+	for i := 0; i < 20; i++ {
+		w, h := rand.Intn(500)+200, rand.Intn(500)+200
+		catImageUrl := fmt.Sprintf("https://placekitten.com/%d/%d", w, h)
+		data.Images[i] = catImageUrl
+	}
+	galleries.Templates.Show.Execute(w, r, data)
 }
 
 func (galleries *Galleries) Edit(w http.ResponseWriter, r *http.Request) {
