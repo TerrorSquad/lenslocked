@@ -36,3 +36,5 @@ bcrypt
 
 # env variables
 .env
+# Images directory for development
+images/
