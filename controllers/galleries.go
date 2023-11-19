@@ -7,6 +7,7 @@ import (
 	"github.com/terrorsquad/lenslocked/errors"
 	"github.com/terrorsquad/lenslocked/models"
 	"net/http"
+	"net/url"
 	"strconv"
 )
 
@@ -47,8 +48,9 @@ func (controller *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 func (controller *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 	gallery, err := controller.galleryById(w, r)
 	type Image struct {
-		GalleryID int
-		FileName  string
+		GalleryID       int
+		Filename        string
+		FilenameEscaped string
 	}
 	var data struct {
 		ID     int
@@ -69,8 +71,9 @@ func (controller *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 	}
 	for _, image := range images {
 		data.Images = append(data.Images, Image{
-			GalleryID: image.GalleryID,
-			FileName:  image.FileName,
+			GalleryID:       image.GalleryID,
+			Filename:        image.FileName,
+			FilenameEscaped: url.PathEscape(image.FileName),
 		})
 	}
 	controller.Templates.Show.Execute(w, r, data)
