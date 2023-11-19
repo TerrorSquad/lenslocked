@@ -5,6 +5,16 @@ import (
 	"fmt"
 	"github.com/terrorsquad/lenslocked/errors"
 	"path/filepath"
+	"strings"
+)
+
+type Image struct {
+	// TODO: Add fields to this type
+	Path string
+}
+
+const (
+	imagesDir = "images"
 )
 
 type Gallery struct {
@@ -87,10 +97,42 @@ func (service *GalleryService) Delete(id int) error {
 	}
 	return nil
 }
+
+func (service *GalleryService) Images(galleryId int) ([]Image, error) {
+	globPattern := filepath.Join(service.galleryDir(galleryId), "*")
+	allFiles, err := filepath.Glob(globPattern)
+	if err != nil {
+		return nil, fmt.Errorf("retrieving gallery images: %w", err)
+	}
+	var images []Image
+	var extensions = service.extensions()
+	for _, file := range allFiles {
+		if hasExtension(file, extensions) {
+			images = append(images, Image{Path: file})
+		}
+	}
+	return images, nil
+}
+
+func (service *GalleryService) extensions() []string {
+	return []string{".jpg", ".png", ".jpeg", ".gif"}
+}
+
 func (service *GalleryService) galleryDir(id int) string {
 	images := service.ImagesDir
 	if images == "" {
-		images = "images"
+		images = imagesDir
 	}
 	return filepath.Join(images, fmt.Sprintf("gallery-%d", id))
+}
+
+func hasExtension(file string, extensions []string) bool {
+	for _, ext := range extensions {
+		file = strings.ToLower(filepath.Ext(file))
+		ext = strings.ToLower(ext)
+		if filepath.Ext(file) == ext {
+			return true
+		}
+	}
+	return false
 }
