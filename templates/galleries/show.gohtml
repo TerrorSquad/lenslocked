@@ -5,7 +5,10 @@
     <div class="columns-4 gap-4 space-y-4 p-8">
         {{range .Images}}
             <div class="h-min w-full">
-                <img class="h-full w-full object-cover rounded shadow" src="{{.}}" alt="image">
+                <a href="/galleries/{{.GalleryID}}/images/{{.FileName}}">
+                    <img class="h-full w-full object-cover rounded shadow"
+                         src="/galleries/{{.GalleryID}}/images/{{.FileName}}" alt="image">
+                </a>
             </div>
         {{end}}
     </div>

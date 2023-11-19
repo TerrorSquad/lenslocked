@@ -6,7 +6,6 @@ import (
 	"github.com/terrorsquad/lenslocked/context"
 	"github.com/terrorsquad/lenslocked/errors"
 	"github.com/terrorsquad/lenslocked/models"
-	"math/rand"
 	"net/http"
 	"strconv"
 )
@@ -46,24 +45,33 @@ func (galleries *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (galleries *Galleries) Show(w http.ResponseWriter, r *http.Request) {
+	gallery, err := galleries.galleryById(w, r)
+	type Image struct {
+		GalleryID int
+		FileName  string
+	}
 	var data struct {
 		ID     int
 		Title  string
-		Images []string
+		Images []Image
 	}
-	gallery, err := galleries.galleryById(w, r)
 	if err != nil {
 		return
 	}
 	data.ID = gallery.ID
 	data.Title = gallery.Title
 
-	numberOfImages := 10
-	data.Images = make([]string, numberOfImages)
-	for i := 0; i < numberOfImages; i++ {
-		w, h := rand.Intn(500)+200, rand.Intn(500)+200
-		catImageUrl := fmt.Sprintf("https://placekitten.com/%d/%d", w, h)
-		data.Images[i] = catImageUrl
+	images, err := galleries.GalleryService.Images(gallery.ID)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+	for _, image := range images {
+		data.Images = append(data.Images, Image{
+			GalleryID: image.GalleryID,
+			FileName:  image.FileName,
+		})
 	}
 	galleries.Templates.Show.Execute(w, r, data)
 }
