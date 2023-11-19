@@ -164,28 +164,20 @@ func (controller *Galleries) Image(w http.ResponseWriter, r *http.Request) {
 	filename := chi.URLParam(r, "filename")
 	galleryId, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
+		if errors.Is(err, models.ErrNotFound) {
+			http.Error(w, "Image not found", http.StatusNotFound)
+			return
+		}
 		http.Error(w, "Invalid gallery ID", http.StatusInternalServerError)
 		return
 	}
-	images, err := controller.GalleryService.Images(galleryId)
+	image, err := controller.GalleryService.Image(galleryId, filename)
+
 	if err != nil {
-		http.Error(w, "Something went wrong", http.StatusInternalServerError)
-		return
-	}
-	var requestedImage models.Image
-	var imageFound = false
-	for _, image := range images {
-		if image.FileName == filename {
-			requestedImage = image
-			imageFound = true
-			break
-		}
-	}
-	if !imageFound {
 		http.Error(w, "Image not found", http.StatusNotFound)
 		return
 	}
-	http.ServeFile(w, r, requestedImage.Path)
+	http.ServeFile(w, r, image.Path)
 }
 
 type galleryOption func(http.ResponseWriter, *http.Request, *models.Gallery) error
