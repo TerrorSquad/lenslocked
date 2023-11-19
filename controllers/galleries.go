@@ -20,32 +20,32 @@ type Galleries struct {
 	GalleryService *models.GalleryService
 }
 
-func (galleries *Galleries) New(w http.ResponseWriter, r *http.Request) {
+func (controller *Galleries) New(w http.ResponseWriter, r *http.Request) {
 	var data struct {
 		Title string
 	}
 	data.Title = r.FormValue("title")
-	galleries.Templates.New.Execute(w, r, data)
+	controller.Templates.New.Execute(w, r, data)
 }
 
-func (galleries *Galleries) Create(w http.ResponseWriter, r *http.Request) {
+func (controller *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 	var data struct {
 		Title string
 	}
 	data.Title = r.FormValue("title")
 	user := context.User(r.Context())
-	gallery, err := galleries.GalleryService.Create(user.ID, data.Title)
+	gallery, err := controller.GalleryService.Create(user.ID, data.Title)
 	if err != nil {
 		err = errors.Public(err, "Gallery could not be created.")
-		galleries.Templates.New.Execute(w, r, data, err)
+		controller.Templates.New.Execute(w, r, data, err)
 		return
 	}
-	editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
+	editPath := fmt.Sprintf("/controller/%d/edit", gallery.ID)
 	http.Redirect(w, r, editPath, http.StatusFound)
 }
 
-func (galleries *Galleries) Show(w http.ResponseWriter, r *http.Request) {
-	gallery, err := galleries.galleryById(w, r)
+func (controller *Galleries) Show(w http.ResponseWriter, r *http.Request) {
+	gallery, err := controller.galleryById(w, r)
 	type Image struct {
 		GalleryID int
 		FileName  string
@@ -61,7 +61,7 @@ func (galleries *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 	data.ID = gallery.ID
 	data.Title = gallery.Title
 
-	images, err := galleries.GalleryService.Images(gallery.ID)
+	images, err := controller.GalleryService.Images(gallery.ID)
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
@@ -73,11 +73,11 @@ func (galleries *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 			FileName:  image.FileName,
 		})
 	}
-	galleries.Templates.Show.Execute(w, r, data)
+	controller.Templates.Show.Execute(w, r, data)
 }
 
-func (galleries *Galleries) Edit(w http.ResponseWriter, r *http.Request) {
-	gallery, err := galleries.galleryById(w, r, userMustOwnGallery)
+func (controller *Galleries) Edit(w http.ResponseWriter, r *http.Request) {
+	gallery, err := controller.galleryById(w, r, userMustOwnGallery)
 	if err != nil {
 		return
 	}
@@ -89,11 +89,11 @@ func (galleries *Galleries) Edit(w http.ResponseWriter, r *http.Request) {
 	data.ID = gallery.ID
 	data.Title = gallery.Title
 
-	galleries.Templates.Edit.Execute(w, r, data)
+	controller.Templates.Edit.Execute(w, r, data)
 }
 
-func (galleries *Galleries) Update(w http.ResponseWriter, r *http.Request) {
-	gallery, err := galleries.galleryById(w, r, userMustOwnGallery)
+func (controller *Galleries) Update(w http.ResponseWriter, r *http.Request) {
+	gallery, err := controller.galleryById(w, r, userMustOwnGallery)
 	if err != nil {
 		return
 	}
@@ -104,36 +104,36 @@ func (galleries *Galleries) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	data.Title = r.FormValue("title")
 	gallery.Title = data.Title
-	err = galleries.GalleryService.Update(*gallery)
+	err = controller.GalleryService.Update(*gallery)
 	if err != nil {
 		err = errors.Public(err, "Gallery could not be updated.")
-		galleries.Templates.Edit.Execute(w, r, data, err)
+		controller.Templates.Edit.Execute(w, r, data, err)
 		return
 	}
-	editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
+	editPath := fmt.Sprintf("/controller/%d/edit", gallery.ID)
 	http.Redirect(w, r, editPath, http.StatusFound)
 }
 
-func (galleries *Galleries) Delete(w http.ResponseWriter, r *http.Request) {
-	gallery, err := galleries.galleryById(w, r, userMustOwnGallery)
+func (controller *Galleries) Delete(w http.ResponseWriter, r *http.Request) {
+	gallery, err := controller.galleryById(w, r, userMustOwnGallery)
 	if err != nil {
 		return
 	}
 
-	err = galleries.GalleryService.Delete(gallery.ID)
+	err = controller.GalleryService.Delete(gallery.ID)
 	if err != nil {
 		err = errors.Public(err, "Gallery could not be deleted.")
 		var data struct {
 			Title string
 			ID    string
 		}
-		galleries.Templates.Edit.Execute(w, r, data, err)
+		controller.Templates.Edit.Execute(w, r, data, err)
 		return
 	}
-	http.Redirect(w, r, "/galleries", http.StatusFound)
+	http.Redirect(w, r, "/controller", http.StatusFound)
 }
 
-func (galleries *Galleries) Index(w http.ResponseWriter, r *http.Request) {
+func (controller *Galleries) Index(w http.ResponseWriter, r *http.Request) {
 	type Gallery struct {
 		ID    int
 		Title string
@@ -143,10 +143,10 @@ func (galleries *Galleries) Index(w http.ResponseWriter, r *http.Request) {
 	}
 	user := context.User(r.Context())
 
-	userGalleries, err := galleries.GalleryService.ByUserID(user.ID)
+	userGalleries, err := controller.GalleryService.ByUserID(user.ID)
 	if err != nil {
 		err = errors.Public(err, "Galleries could not be retrieved.")
-		galleries.Templates.Index.Execute(w, r, data, err)
+		controller.Templates.Index.Execute(w, r, data, err)
 		return
 	}
 	data.Galleries = make([]Gallery, len(userGalleries))
@@ -157,12 +157,40 @@ func (galleries *Galleries) Index(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	galleries.Templates.Index.Execute(w, r, data)
+	controller.Templates.Index.Execute(w, r, data)
+}
+
+func (controller *Galleries) Image(w http.ResponseWriter, r *http.Request) {
+	filename := chi.URLParam(r, "filename")
+	galleryId, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "Invalid gallery ID", http.StatusInternalServerError)
+		return
+	}
+	images, err := controller.GalleryService.Images(galleryId)
+	if err != nil {
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+	var requestedImage models.Image
+	var imageFound = false
+	for _, image := range images {
+		if image.FileName == filename {
+			requestedImage = image
+			imageFound = true
+			break
+		}
+	}
+	if !imageFound {
+		http.Error(w, "Image not found", http.StatusNotFound)
+		return
+	}
+	http.ServeFile(w, r, requestedImage.Path)
 }
 
 type galleryOption func(http.ResponseWriter, *http.Request, *models.Gallery) error
 
-func (galleries *Galleries) galleryById(w http.ResponseWriter, r *http.Request, options ...galleryOption) (*models.Gallery, error) {
+func (controller *Galleries) galleryById(w http.ResponseWriter, r *http.Request, options ...galleryOption) (*models.Gallery, error) {
 	var galleryId, err = strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		// TODO: Handle this error better.
@@ -170,7 +198,7 @@ func (galleries *Galleries) galleryById(w http.ResponseWriter, r *http.Request, 
 		return nil, err
 	}
 	var gallery *models.Gallery
-	gallery, err = galleries.GalleryService.ByID(galleryId)
+	gallery, err = controller.GalleryService.ByID(galleryId)
 	if err != nil {
 		if errors.Is(err, models.ErrNotFound) {
 			http.Error(w, "Gallery not found", http.StatusNotFound)

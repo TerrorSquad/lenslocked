@@ -169,6 +169,7 @@ func main() {
 
 	router.Route("/galleries", func(r chi.Router) {
 		r.Get("/{id}", galleriesController.Show)
+		r.Get("/{id}/images/{filename}", galleriesController.Image)
 		r.Group(func(r chi.Router) {
 			r.Use(umw.RequireUser)
 			r.Get("/new", galleriesController.New)
