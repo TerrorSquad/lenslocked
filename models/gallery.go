@@ -9,8 +9,9 @@ import (
 )
 
 type Image struct {
-	// TODO: Add fields to this type
-	Path string
+	GalleryID int
+	Path      string
+	FileName  string
 }
 
 const (
@@ -108,7 +109,11 @@ func (service *GalleryService) Images(galleryId int) ([]Image, error) {
 	var extensions = service.extensions()
 	for _, file := range allFiles {
 		if hasExtension(file, extensions) {
-			images = append(images, Image{Path: file})
+			images = append(images, Image{
+				Path:      file,
+				FileName:  filepath.Base(file),
+				GalleryID: galleryId,
+			})
 		}
 	}
 	return images, nil
