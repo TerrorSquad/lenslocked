@@ -8,7 +8,7 @@
                     {{csrfField}}
                 </div>
 
-                <div class="mt-8 flex flex-col">
+                <div class="mt-8 flex flex-col w-32">
                     <label for="title" class="text-lg font-semibold">Title</label>
                     <input class="px-2 py-1 border-b border-blue-100 align-middle"
                            id="title"
@@ -23,19 +23,29 @@
                 </div>
 
                 <div class="mt-8">
-                    <button class="bg-blue-500 hover:bg-blue-700 p-2 rounded text-lg text-white w-full" type="submit">
-                        Save
+                    <button class="bg-blue-500 hover:bg-blue-700 p-2 rounded text-lg text-white w-32" type="submit">
+                        Update
                     </button>
                 </div>
             </form>
             <div class="py-4">
-                <h2>Dangeros actions</h2>
+                <h2 class="pb-4 text-sm font-semibold text-gray-800">Current images</h2>
+                <div class="py-2 grid grid-cols-8 gap-2">
+                    {{range .Images}}
+                        <div class="h-min w-full relative">
+                            <img class="w-full" src="/galleries/{{.GalleryID}}/images/{{.FilenameEscaped}}" alt="">
+                        </div>
+                    {{end}}
+                </div>
+            </div>
+            <div class="py-4">
+                <h2>Dangerous actions</h2>
                 <form method="POST" action="/galleries/{{.ID}}/delete" class="flex flex-col mx-auto pt-4">
                     <div class="hidden">
                         {{csrfField}}
                     </div>
                     <div class="mt-8">
-                        <button class="bg-red-500 hover:bg-red-700 p-2 rounded text-lg text-white w-full" type="submit">
+                        <button class="bg-red-500 hover:bg-red-700 p-2 rounded text-lg text-white w-32" type="submit">
                             Delete
                         </button>
                     </div>

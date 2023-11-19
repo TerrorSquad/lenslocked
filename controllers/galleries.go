@@ -85,12 +85,31 @@ func (controller *Galleries) Edit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	type Image struct {
+		GalleryID       int
+		Filename        string
+		FilenameEscaped string
+	}
 	var data struct {
-		Title string
-		ID    int
+		Title  string
+		ID     int
+		Images []Image
 	}
 	data.ID = gallery.ID
 	data.Title = gallery.Title
+	images, err := controller.GalleryService.Images(gallery.ID)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+	for _, image := range images {
+		data.Images = append(data.Images, Image{
+			GalleryID:       image.GalleryID,
+			Filename:        image.FileName,
+			FilenameEscaped: url.PathEscape(image.FileName),
+		})
+	}
 
 	controller.Templates.Edit.Execute(w, r, data)
 }
