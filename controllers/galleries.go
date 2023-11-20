@@ -8,6 +8,7 @@ import (
 	"github.com/terrorsquad/lenslocked/models"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strconv"
 )
 
@@ -183,7 +184,7 @@ func (controller *Galleries) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (controller *Galleries) Image(w http.ResponseWriter, r *http.Request) {
-	filename := chi.URLParam(r, "filename")
+	filename := controller.filename(w, r)
 	galleryId, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		if errors.Is(err, models.ErrNotFound) {
@@ -202,7 +203,7 @@ func (controller *Galleries) Image(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, image.Path)
 }
 func (controller *Galleries) DeleteImage(w http.ResponseWriter, r *http.Request) {
-	filename := chi.URLParam(r, "filename")
+	filename := controller.filename(w, r)
 	gallery, err := controller.galleryById(w, r, userMustOwnGallery)
 	if err != nil {
 		return
@@ -213,6 +214,12 @@ func (controller *Galleries) DeleteImage(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	http.Redirect(w, r, fmt.Sprintf("/galleries/%d/edit", gallery.ID), http.StatusFound)
+}
+
+func (controller *Galleries) filename(w http.ResponseWriter, r *http.Request) string {
+	filename := chi.URLParam(r, "filename")
+	filename = filepath.Base(filename)
+	return filename
 }
 
 type galleryOption func(http.ResponseWriter, *http.Request, *models.Gallery) error
