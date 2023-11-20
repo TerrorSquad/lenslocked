@@ -34,6 +34,9 @@
                     {{range .Images}}
                         <div class="h-min w-full relative">
                             <img class="w-full" src="/galleries/{{.GalleryID}}/images/{{.FilenameEscaped}}" alt="">
+                            <div class="absolute top-2 right-2">
+                                {{template "delete_image_form" .}}
+                            </div>
                         </div>
                     {{end}}
                 </div>
@@ -54,4 +57,18 @@
         </div>
     </div>
 
+{{end}}
+
+
+{{define "delete_image_form"}}
+    <form method="POST" action="/galleries/{{.GalleryID}}/images/{{.FilenameEscaped}}/delete"
+          onsubmit="return confirm('Do you really want to delete this image?')">
+        <div class="hidden">
+            {{csrfField}}
+        </div>
+        <button type="submit"
+                class="p-1 font-semibold text-sm text-red-500 bg-red-200 rounded hover:text-red-600 hover:bg-red-300 ">
+            Delete
+        </button>
+    </form>
 {{end}}
