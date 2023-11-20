@@ -201,6 +201,19 @@ func (controller *Galleries) Image(w http.ResponseWriter, r *http.Request) {
 	}
 	http.ServeFile(w, r, image.Path)
 }
+func (controller *Galleries) DeleteImage(w http.ResponseWriter, r *http.Request) {
+	filename := chi.URLParam(r, "filename")
+	gallery, err := controller.galleryById(w, r, userMustOwnGallery)
+	if err != nil {
+		return
+	}
+	err = controller.GalleryService.DeleteImage(gallery.ID, filename)
+	if err != nil {
+		http.Error(w, "Something went wrong", http.StatusNotFound)
+		return
+	}
+	http.Redirect(w, r, fmt.Sprintf("/galleries/%d/edit", gallery.ID), http.StatusFound)
+}
 
 type galleryOption func(http.ResponseWriter, *http.Request, *models.Gallery) error
 
@@ -234,7 +247,7 @@ func userMustOwnGallery(w http.ResponseWriter, r *http.Request, gallery *models.
 	user := context.User(r.Context())
 
 	if gallery.UserID != user.ID {
-		http.Error(w, "You do not have permission to edit this gallery.", http.StatusForbidden)
+		http.Error(w, "You do not have access to this gallery.", http.StatusForbidden)
 		return errors.Public(nil, "You do not have access to this gallery.")
 	}
 	return nil
