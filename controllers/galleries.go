@@ -6,7 +6,6 @@ import (
 	"github.com/terrorsquad/lenslocked/context"
 	"github.com/terrorsquad/lenslocked/errors"
 	"github.com/terrorsquad/lenslocked/models"
-	"io"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -43,7 +42,7 @@ func (controller *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 		controller.Templates.New.Execute(w, r, data, err)
 		return
 	}
-	editPath := fmt.Sprintf("/controller/%d/edit", gallery.ID)
+	editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
 	http.Redirect(w, r, editPath, http.StatusFound)
 }
 
@@ -134,7 +133,7 @@ func (controller *Galleries) Update(w http.ResponseWriter, r *http.Request) {
 		controller.Templates.Edit.Execute(w, r, data, err)
 		return
 	}
-	editPath := fmt.Sprintf("/controller/%d/edit", gallery.ID)
+	editPath := fmt.Sprintf("/galleries/%d/edit", gallery.ID)
 	http.Redirect(w, r, editPath, http.StatusFound)
 }
 
@@ -154,7 +153,7 @@ func (controller *Galleries) Delete(w http.ResponseWriter, r *http.Request) {
 		controller.Templates.Edit.Execute(w, r, data, err)
 		return
 	}
-	http.Redirect(w, r, "/controller", http.StatusFound)
+	http.Redirect(w, r, "/galleries", http.StatusFound)
 }
 
 func (controller *Galleries) Index(w http.ResponseWriter, r *http.Request) {
@@ -223,9 +222,13 @@ func (controller *Galleries) UploadImage(w http.ResponseWriter, r *http.Request)
 		}
 		defer file.Close()
 		fmt.Printf("Attempting to upload %v for gallery %d\n", fileHeader.Filename, gallery.ID)
-		io.Copy(w, file)
-		return
 
+		err = controller.GalleryService.CreateImage(gallery.ID, fileHeader.Filename, file)
+		if err != nil {
+			http.Error(w, "Something went wrong", http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, fmt.Sprintf("/galleries/%d/edit", gallery.ID), http.StatusFound)
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/terrorsquad/lenslocked/errors"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -138,6 +139,27 @@ func (service *GalleryService) Image(galleryID int, filename string) (Image, err
 		GalleryID: galleryID,
 	}, nil
 }
+
+func (service *GalleryService) CreateImage(galleryID int, filename string, contents io.Reader) error {
+	galleryDir := service.galleryDir(galleryID)
+	err := os.MkdirAll(galleryDir, 0755)
+	if err != nil {
+		return fmt.Errorf("creating gallery-%d image directory: %w", galleryID, err)
+	}
+	imagePath := filepath.Join(service.galleryDir(galleryID), filename)
+	dst, err := os.Create(imagePath)
+	if err != nil {
+		return fmt.Errorf("creating gallery image: %w", err)
+	}
+	defer dst.Close()
+	_, err = io.Copy(dst, contents)
+	if err != nil {
+		return fmt.Errorf("copying contents to image: %w", err)
+	}
+
+	return nil
+}
+
 func (service *GalleryService) DeleteImage(galleryID int, filename string) error {
 	image, err := service.Image(galleryID, filename)
 	if err != nil {
