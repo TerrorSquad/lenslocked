@@ -179,6 +179,7 @@ func main() {
 			r.Post("/{id}", galleriesController.Update)
 			r.Post("/{id}/delete", galleriesController.Delete)
 			r.Post("/{id}/images/{filename}/delete", galleriesController.DeleteImage)
+			r.Post("/{id}/images/", galleriesController.UploadImage)
 		})
 	})
 
