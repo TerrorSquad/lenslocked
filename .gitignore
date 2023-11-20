@@ -38,3 +38,6 @@ bcrypt
 .env
 # Images directory for development
 images/
+
+# Node modules
+node_modules/
