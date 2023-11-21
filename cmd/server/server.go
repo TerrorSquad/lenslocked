@@ -182,6 +182,9 @@ func main() {
 		})
 	})
 
+	assetsHandler := http.FileServer(http.Dir("assets"))
+	router.Get("/assets/*", http.StripPrefix("/assets", assetsHandler).ServeHTTP)
+
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
 
 	fmt.Println("Server is running on port: " + cfg.Server.Port)
