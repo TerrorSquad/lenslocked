@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -75,6 +76,7 @@ func main() {
 		panic(err)
 	}
 }
+
 func run(cfg config) error {
 	// Set up database connection
 	db, err := models.Open(cfg.PSQL)
@@ -88,8 +90,38 @@ func run(cfg config) error {
 		return err
 	}
 
-	// Setup services
+	server := initServer(cfg, db)
 
+	fmt.Println("Server is running on port: " + cfg.Server.Port)
+	log.Println("Server is running on port: " + cfg.Server.Port)
+	return http.ListenAndServe(cfg.Server.Address+":"+cfg.Server.Port, server.Router)
+}
+
+type Services struct {
+	UserService          *models.UserService
+	SessionService       *models.SessionService
+	PasswordResetService *models.PasswordResetService
+	EmailService         *models.EmailService
+	GalleryService       *models.GalleryService
+}
+type Controllers struct {
+	UsersController     controllers.Users
+	GalleriesController controllers.Galleries
+}
+type Middleware struct {
+	UserMiddleware controllers.UserMiddleware
+	CSRFMiddleware func(http.Handler) http.Handler
+}
+
+type Server struct {
+	Services    *Services
+	Middleware  *Middleware
+	Controllers *Controllers
+	BaseLayouts []string
+	Router      *chi.Mux
+}
+
+func initServices(cfg config, db *sql.DB) *Services {
 	userService := &models.UserService{
 		DB: db,
 	}
@@ -104,30 +136,91 @@ func run(cfg config) error {
 	galleryService := &models.GalleryService{
 		DB: db,
 	}
-
-	// Setup middleware
-
-	umw := controllers.UserMiddleware{
-		SessionService: sessionService,
+	if err != nil {
+		panic(err)
 	}
-
-	csrfKey := []byte(cfg.CSRF.Key)
-	csrfMw := csrf.Protect(
-		csrfKey,
-		csrf.Secure(cfg.CSRF.Secure),
-		csrf.Path("/"),
-	)
-
-	// Setup controllers
-
-	usersController := controllers.Users{
+	return &Services{
 		UserService:          userService,
 		SessionService:       sessionService,
 		PasswordResetService: passwordResetService,
 		EmailService:         emailService,
+		GalleryService:       galleryService,
+	}
+}
+
+func initServer(cfg config, db *sql.DB) Server {
+	server := Server{}
+	var baseLayouts = []string{"layouts/layout-page.gohtml", "layouts/layout-page-tailwind.gohtml"}
+	server.BaseLayouts = baseLayouts
+	server.Services = initServices(cfg, db)
+	server.Middleware = initMiddleware(cfg, server)
+	server.Controllers = initControllers(server)
+	server.Router = initRouter(server)
+	return server
+}
+
+func initRouter(server Server) *chi.Mux {
+	router := chi.NewRouter()
+	router.Use(middleware.Logger)
+	router.Use(server.Middleware.CSRFMiddleware)
+	router.Use(server.Middleware.UserMiddleware.SetUser)
+	var tpl views.Template
+
+	tpl = views.Must(views.ParseFS(templates.FS, append(server.BaseLayouts, "pages/home.gohtml")...))
+	router.Get("/", controllers.StaticHandler(tpl, nil))
+
+	tpl = views.Must(views.ParseFS(templates.FS, append(server.BaseLayouts, "pages/contact.gohtml")...))
+	router.Get("/contact", controllers.StaticHandler(tpl, nil))
+
+	tpl = views.Must(views.ParseFS(templates.FS, append(server.BaseLayouts, "pages/faq.gohtml")...))
+	router.Get("/faq", controllers.FAQ(tpl))
+
+	router.Get("/signup", server.Controllers.UsersController.New)
+	router.Post("/users", server.Controllers.UsersController.Create)
+	router.Get("/signin", server.Controllers.UsersController.SignIn)
+	router.Post("/signin", server.Controllers.UsersController.ProcessSignIn)
+	router.Post("/signout", server.Controllers.UsersController.ProcessSignOut)
+	router.Get("/forgot-pw", server.Controllers.UsersController.ForgotPassword)
+	router.Post("/forgot-pw", server.Controllers.UsersController.ProcessForgotPassword)
+	router.Get("/reset-pw", server.Controllers.UsersController.ResetPassword)
+	router.Post("/reset-pw", server.Controllers.UsersController.ProcessResetPassword)
+	router.Route("/users/me", func(r chi.Router) {
+		r.Use(server.Middleware.UserMiddleware.RequireUser)
+		r.Get("/", server.Controllers.UsersController.CurrentUser)
+	})
+
+	router.Route("/galleries", func(r chi.Router) {
+		r.Get("/{id}", server.Controllers.GalleriesController.Show)
+		r.Get("/{id}/images/{filename}", server.Controllers.GalleriesController.Image)
+		r.Group(func(r chi.Router) {
+			r.Use(server.Middleware.UserMiddleware.RequireUser)
+			r.Get("/new", server.Controllers.GalleriesController.New)
+			r.Get("/", server.Controllers.GalleriesController.Index)
+			r.Post("/", server.Controllers.GalleriesController.Create)
+			r.Get("/{id}/edit", server.Controllers.GalleriesController.Edit)
+			r.Post("/{id}", server.Controllers.GalleriesController.Update)
+			r.Post("/{id}/delete", server.Controllers.GalleriesController.Delete)
+			r.Post("/{id}/images/{filename}/delete", server.Controllers.GalleriesController.DeleteImage)
+			r.Post("/{id}/images/", server.Controllers.GalleriesController.UploadImage)
+		})
+	})
+
+	assetsHandler := http.FileServer(http.Dir("assets"))
+	router.Get("/assets/*", http.StripPrefix("/assets", assetsHandler).ServeHTTP)
+
+	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
+	return router
+}
+
+func initControllers(server Server) *Controllers {
+	usersController := controllers.Users{
+		UserService:          server.Services.UserService,
+		SessionService:       server.Services.SessionService,
+		PasswordResetService: server.Services.PasswordResetService,
+		EmailService:         server.Services.EmailService,
 	}
 	galleriesController := controllers.Galleries{
-		GalleryService: galleryService,
+		GalleryService: server.Services.GalleryService,
 	}
 	var baseLayouts = []string{"layouts/layout-page.gohtml", "layouts/layout-page-tailwind.gohtml"}
 	usersController.Templates.SignIn = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/signin.gohtml")...))
@@ -141,59 +234,25 @@ func run(cfg config) error {
 	galleriesController.Templates.Show = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/show.gohtml")...))
 	galleriesController.Templates.Index = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "galleries/index.gohtml")...))
 
-	// Setup router and routes
+	return &Controllers{
+		UsersController:     usersController,
+		GalleriesController: galleriesController,
+	}
+}
 
-	router := chi.NewRouter()
-	router.Use(middleware.Logger)
-	router.Use(csrfMw)
-	router.Use(umw.SetUser)
-	var tpl views.Template
+func initMiddleware(cfg config, server Server) *Middleware {
+	umw := controllers.UserMiddleware{
+		SessionService: server.Services.SessionService,
+	}
 
-	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/home.gohtml")...))
-	router.Get("/", controllers.StaticHandler(tpl, nil))
-
-	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/contact.gohtml")...))
-	router.Get("/contact", controllers.StaticHandler(tpl, nil))
-
-	tpl = views.Must(views.ParseFS(templates.FS, append(baseLayouts, "pages/faq.gohtml")...))
-	router.Get("/faq", controllers.FAQ(tpl))
-
-	router.Get("/signup", usersController.New)
-	router.Post("/users", usersController.Create)
-	router.Get("/signin", usersController.SignIn)
-	router.Post("/signin", usersController.ProcessSignIn)
-	router.Post("/signout", usersController.ProcessSignOut)
-	router.Get("/forgot-pw", usersController.ForgotPassword)
-	router.Post("/forgot-pw", usersController.ProcessForgotPassword)
-	router.Get("/reset-pw", usersController.ResetPassword)
-	router.Post("/reset-pw", usersController.ProcessResetPassword)
-	router.Route("/users/me", func(r chi.Router) {
-		r.Use(umw.RequireUser)
-		r.Get("/", usersController.CurrentUser)
-	})
-
-	router.Route("/galleries", func(r chi.Router) {
-		r.Get("/{id}", galleriesController.Show)
-		r.Get("/{id}/images/{filename}", galleriesController.Image)
-		r.Group(func(r chi.Router) {
-			r.Use(umw.RequireUser)
-			r.Get("/new", galleriesController.New)
-			r.Get("/", galleriesController.Index)
-			r.Post("/", galleriesController.Create)
-			r.Get("/{id}/edit", galleriesController.Edit)
-			r.Post("/{id}", galleriesController.Update)
-			r.Post("/{id}/delete", galleriesController.Delete)
-			r.Post("/{id}/images/{filename}/delete", galleriesController.DeleteImage)
-			r.Post("/{id}/images/", galleriesController.UploadImage)
-		})
-	})
-
-	assetsHandler := http.FileServer(http.Dir("assets"))
-	router.Get("/assets/*", http.StripPrefix("/assets", assetsHandler).ServeHTTP)
-
-	router.NotFound(func(w http.ResponseWriter, r *http.Request) { http.Error(w, "Page not found", http.StatusNotFound) })
-
-	fmt.Println("Server is running on port: " + cfg.Server.Port)
-	log.Println("Server is running on port: " + cfg.Server.Port)
-	return http.ListenAndServe(cfg.Server.Address+":"+cfg.Server.Port, router)
+	csrfKey := []byte(cfg.CSRF.Key)
+	csrfMw := csrf.Protect(
+		csrfKey,
+		csrf.Secure(cfg.CSRF.Secure),
+		csrf.Path("/"),
+	)
+	return &Middleware{
+		UserMiddleware: umw,
+		CSRFMiddleware: csrfMw,
+	}
 }
