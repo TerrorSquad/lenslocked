@@ -23,5 +23,6 @@ COPY --from=tailwind_builder /styles.css /app/assets/styles.css
 COPY .env .env
 COPY --from=builder /app/server ./server
 COPY .fly .fly
-# TODO: refactor this so it's not so hacky
-CMD  .fly/script_runner.sh && ./server
+RUN chmod +x .fly/entrypoint.sh && \
+    mv .fly/entrypoint.sh /entrypoint;
+ENTRYPOINT ["/entrypoint"]
