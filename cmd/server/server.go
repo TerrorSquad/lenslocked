@@ -14,7 +14,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"runtime"
 	"strconv"
 )
 
@@ -38,7 +37,14 @@ func loadEnvConfig() (config, error) {
 		return cfg, err
 	}
 
-	cfg.PSQL = models.DefaultPostgresConfig()
+	cfg.PSQL = models.PostgresConfig{
+		Host:     os.Getenv("PSQL_HOST"),
+		Port:     os.Getenv("PSQL_PORT"),
+		User:     os.Getenv("PSQL_USER"),
+		Password: os.Getenv("PSQL_PASSWORD"),
+		Database: os.Getenv("PSQL_DATABASE"),
+		SSLMode:  os.Getenv("PSQL_SSLMODE"),
+	}
 
 	cfg.SMTP.Host = os.Getenv("SMTP_HOST")
 	cfg.SMTP.Port, err = strconv.Atoi(os.Getenv("SMTP_PORT"))
@@ -49,17 +55,10 @@ func loadEnvConfig() (config, error) {
 	cfg.SMTP.Password = os.Getenv("SMTP_PASSWORD")
 
 	cfg.CSRF.Key = os.Getenv("CSRF_KEY")
-	cfg.CSRF.Secure = false
+	cfg.CSRF.Secure = os.Getenv("CSRF_SECURE") == "true"
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-
-	address := ""
-	if runtime.GOOS == "darwin" {
-		address = "localhost"
-	}
+	port := os.Getenv("SERVER_PORT")
+	address := os.Getenv("SERVER_ADDRESS")
 	cfg.Server.Address = address
 	cfg.Server.Port = port
 	return cfg, nil
