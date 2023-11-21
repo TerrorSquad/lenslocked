@@ -12,7 +12,6 @@ import (
 	"github.com/terrorsquad/lenslocked/models"
 	"github.com/terrorsquad/lenslocked/templates"
 	"github.com/terrorsquad/lenslocked/views"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -92,8 +91,7 @@ func run(cfg config) error {
 
 	server := initServer(cfg, db)
 
-	fmt.Println("Server is running on port: " + cfg.Server.Port)
-	log.Println("Server is running on port: " + cfg.Server.Port)
+	fmt.Println("Server is running on address:port: " + cfg.Server.Address + ":" + cfg.Server.Port)
 	return http.ListenAndServe(cfg.Server.Address+":"+cfg.Server.Port, server.Router)
 }
 
