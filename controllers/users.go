@@ -131,6 +131,7 @@ func (controller Users) ProcessForgotPassword(w http.ResponseWriter, r *http.Req
 	vals := url.Values{
 		"token": []string{pwReset.Token},
 	}
+	// TODO: Make this configurable
 	resetURL := "https://localhost:8080/reset-pw?" + vals.Encode()
 	err = controller.EmailService.ForgotPassword(data.Email, resetURL)
 	if err != nil {
