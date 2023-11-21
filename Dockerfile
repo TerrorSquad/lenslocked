@@ -23,5 +23,5 @@ COPY --from=tailwind_builder /styles.css /app/assets/styles.css
 COPY .env .env
 COPY --from=builder /app/server ./server
 COPY .fly .fly
-RUN .fly/script_runner.sh
-CMD ./server
+# TODO: refactor this so it's not so hacky
+CMD  .fly/script_runner.sh && ./server
