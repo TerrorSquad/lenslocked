@@ -1,0 +1,7 @@
+{
+  "tabWidth": 4,
+  "plugins": [
+    "prettier-plugin-go-template",
+    "prettier-plugin-tailwindcss"
+  ]
+}

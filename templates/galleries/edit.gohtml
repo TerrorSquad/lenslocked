@@ -1,41 +1,73 @@
-{{define "page"}}
-    <div class="py-12 flex justify-center">
-        <div class="px-8 py-8 bg-white rounded shadow">
-            <h1 class="text-3xl text-center font-bold text-gray-700 pt-4 pb-5">Edit gallery</h1>
-            <form method="POST" action="/galleries/{{.ID}}" class="flex flex-col mx-auto pt-4">
-
-                <div class="hidden">
-                    {{csrfField}}
-                </div>
-
-                <div class="mt-8 flex flex-col">
-                    <label for="title" class="text-lg font-semibold">Title</label>
-                    <input class="px-2 py-1 border-b border-blue-100 align-middle"
-                           id="title"
-                           name="title"
-                           type="text"
-                           placeholder="title"
-                           required
-                           autocomplete="title"
-                           value="{{if .Title}}{{.Title}}{{end}}"
-                           autofocus
+{{ define "page" }}
+    <div class="flex justify-center py-12">
+        <div class="rounded bg-white px-8 py-8 shadow">
+            <h1 class="pb-5 pt-4 text-center text-3xl font-bold text-gray-700">
+                Edit gallery
+            </h1>
+            <form
+                method="POST"
+                action="/galleries/{{ .ID }}"
+                class="mx-auto flex flex-col pt-4"
+            >
+                <div class="hidden">{{ csrfField }}</div>
+                <div class="mt-8 flex w-full flex-col">
+                    <label for="title" class="text-lg font-semibold"
+                        >Title</label
+                    >
+                    <input
+                        class="border-b border-blue-100 px-2 py-1 align-middle"
+                        id="title"
+                        name="title"
+                        type="text"
+                        placeholder="title"
+                        required
+                        autocomplete="title"
+                        value="{{ if .Title }}{{ .Title }}{{ end }}"
+                        autofocus
                     />
                 </div>
-
                 <div class="mt-8">
-                    <button class="bg-blue-500 hover:bg-blue-700 p-2 rounded text-lg text-white w-full" type="submit">
-                        Save
+                    <button
+                        class="w-32 rounded bg-blue-500 p-2 text-lg text-white hover:bg-blue-700"
+                        type="submit"
+                    >
+                        Update
                     </button>
                 </div>
             </form>
             <div class="py-4">
-                <h2>Dangeros actions</h2>
-                <form method="POST" action="/galleries/{{.ID}}/delete" class="flex flex-col mx-auto pt-4">
-                    <div class="hidden">
-                        {{csrfField}}
-                    </div>
+                <h2 class="pb-4 text-sm font-semibold text-gray-800">
+                    Current images
+                </h2>
+                <div class="grid grid-cols-8 gap-2 py-2">
+                    {{ range .Images }}
+                        <div class="relative h-min w-full">
+                            <img
+                                class="w-full"
+                                src="/galleries/{{ .GalleryID }}/images/{{ .FilenameEscaped }}"
+                                alt=""
+                            />
+                            <div class="absolute right-2 top-2">
+                                {{ template "delete_image_form" . }}
+                            </div>
+                        </div>
+                    {{ end }}
+                </div>
+            </div>
+            <div class="py-4">{{ template "upload_image_form" . }}</div>
+            <div class="py-4">
+                <h2>Dangerous actions</h2>
+                <form
+                    method="POST"
+                    action="/galleries/{{ .ID }}/delete"
+                    class="mx-auto flex flex-col pt-4"
+                >
+                    <div class="hidden">{{ csrfField }}</div>
                     <div class="mt-8">
-                        <button class="bg-red-500 hover:bg-red-700 p-2 rounded text-lg text-white w-full" type="submit">
+                        <button
+                            class="w-32 rounded bg-red-500 p-2 text-lg text-white hover:bg-red-700"
+                            type="submit"
+                        >
                             Delete
                         </button>
                     </div>
@@ -43,5 +75,54 @@
             </div>
         </div>
     </div>
+{{ end }}
 
-{{end}}
+{{ define "delete_image_form" }}
+    <form
+        method="POST"
+        action="/galleries/{{ .GalleryID }}/images/{{ .FilenameEscaped }}/delete"
+        onsubmit="return confirm('Do you really want to delete this image?')"
+    >
+        <div class="hidden">{{ csrfField }}</div>
+        <button
+            type="submit"
+            class="rounded bg-red-200 p-1 text-sm font-semibold text-red-500 hover:bg-red-300 hover:text-red-600 "
+        >
+            Delete
+        </button>
+    </form>
+{{ end }}
+
+{{ define "upload_image_form" }}
+    <form
+        method="POST"
+        action="/galleries/{{ .ID }}/images/"
+        enctype="multipart/form-data"
+    >
+        <div class="hidden">{{ csrfField }}</div>
+        <div class="py-2">
+            <label
+                for="images"
+                class="mb-2 block text-sm font-semibold text-gray-800"
+            >
+                Add images
+                <p class="py-2 text-xs font-normal text-gray-600">
+                    Please only upload jpg, png or gif files.
+                </p>
+            </label>
+            <input
+                name="images"
+                id="images"
+                type="file"
+                multiple
+                accept="image/png, image/jpg, image/gif"
+            />
+        </div>
+        <button
+            type="submit"
+            class="rounded bg-indigo-600 px-8 py-2 text-lg font-bold text-white hover:bg-indigo-700"
+        >
+            Upload
+        </button>
+    </form>
+{{ end }}

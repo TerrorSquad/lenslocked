@@ -1,34 +1,44 @@
-{{define "page"}}
-    <div class="py-12 flex justify-center">
-        <div class="px-8 py-8 bg-white rounded shadow">
-            <h1 class="text-3xl text-center font-bold text-gray-700 pt-4 pb-5">New gallery</h1>
-            <form method="POST" action="/galleries/" class="flex flex-col mx-auto pt-4">
-
+{{ define "page" }}
+    <div class="flex justify-center py-12">
+        <div class="rounded bg-white px-8 py-8 shadow">
+            <h1 class="pb-5 pt-4 text-center text-3xl font-bold text-gray-700">
+                New gallery
+            </h1>
+            <form
+                method="POST"
+                action="/galleries/"
+                class="mx-auto flex flex-col pt-4"
+            >
                 <div class="hidden">
-                    {{csrfField}}
+                    {{ csrfField }}
                 </div>
 
                 <div class="mt-8 flex flex-col">
-                    <label for="title" class="text-lg font-semibold">Title</label>
-                    <input class="px-2 py-1 border-b border-blue-100 align-middle"
-                           id="title"
-                           name="title"
-                           type="text"
-                           placeholder="title"
-                           required
-                           autocomplete="title"
-                           value="{{if .Title}}{{.Title}}{{end}}"
-                           autofocus
+                    <label for="title" class="text-lg font-semibold"
+                        >Title</label
+                    >
+                    <input
+                        class="border-b border-blue-100 px-2 py-1 align-middle"
+                        id="title"
+                        name="title"
+                        type="text"
+                        placeholder="title"
+                        required
+                        autocomplete="title"
+                        value="{{ if .Title }}{{ .Title }}{{ end }}"
+                        autofocus
                     />
                 </div>
 
                 <div class="mt-8">
-                    <button class="bg-blue-500 hover:bg-blue-700 p-2 rounded text-lg text-white w-full" type="submit">
+                    <button
+                        class="w-full rounded bg-blue-500 p-2 text-lg text-white hover:bg-blue-700"
+                        type="submit"
+                    >
                         Create gallery
                     </button>
                 </div>
             </form>
         </div>
     </div>
-
-{{end}}
+{{ end }}

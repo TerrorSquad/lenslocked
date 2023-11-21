@@ -1,21 +1,21 @@
 {{ define "page" }}
- <div class="px-6">
-     <h1 class="py-4 text-4xl semibold tracking-tight">FAQ:</h1>
-     <ul class="grid grid-cols-2 gap-16">
-        {{/* Inline code without a template */}}
-        {{/*    {{ range . }}*/}}
-        {{/*        <li>*/}}
-        {{/*            <p>{{ .Question }}</p>*/}}
-        {{/*            <p>{{ .Answer }}</p>*/}}
-        {{/*        </li>*/}}
-        {{/*    {{ end }}*/}}
+    <div class="px-6">
+        <h1 class="py-4 text-4xl semibold tracking-tight">FAQ:</h1>
+        <ul class="grid grid-cols-2 gap-16">
+            {{/* Inline code without a template */}}
+            {{/*    {{ range . }}*/}}
+            {{/*        <li>*/}}
+            {{/*            <p>{{ .Question }}</p>*/}}
+            {{/*            <p>{{ .Answer }}</p>*/}}
+            {{/*        </li>*/}}
+            {{/*    {{ end }}*/}}
 
-        {{/* Use a template called qa and pass data to it */}}
-        {{ range . }}
-            {{ template "qa" . }}
-        {{ end }}
-    </ul>
-</div>
+            {{/* Use a template called qa and pass data to it */}}
+            {{ range . }}
+                {{ template "qa" . }}
+            {{ end }}
+        </ul>
+    </div>
 
 {{ end }}
 
