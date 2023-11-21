@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env sh
 
 set -e
 # This script is used to run scripts in the .fly/scripts directory
@@ -7,5 +7,5 @@ set -e
 SCRIPTS=$(ls .fly/scripts/*.sh | sort -V)
 for script in $SCRIPTS; do
     echo "Running $script"
-    bash "$script"
+    sh "$script"
 done

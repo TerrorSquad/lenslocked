@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 FOLDER=/app
 # This script should open the /app directory
 # Then it should check if the /app/storage directory exists

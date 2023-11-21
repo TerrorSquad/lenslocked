@@ -19,10 +19,9 @@ RUN go build -v -o ./server ./cmd/server
 
 FROM alpine AS app
 WORKDIR /app
+COPY --from=tailwind_builder /styles.css /app/assets/styles.css
 COPY .env .env
 COPY --from=builder /app/server ./server
-COPY --from=tailwind_builder /styles.css /app/assets/styles.css
-COPY --from=builder /app/.fly/scripts /app/.fly/scripts
-COPY --from=builder /app/.fly/script_runner.sh /app/.fly/script_runner.sh
-RUN /app/.fly/script_runner.sh
+COPY .fly .fly
+RUN .fly/script_runner.sh
 CMD ./server
