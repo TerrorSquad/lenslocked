@@ -13,9 +13,10 @@ dockerfile = "Dockerfile"
 PSQL_PORT = "5432"
 PSQL_HOST = "snowy-wind-2243.internal"
 
-[mounts]
+[[mounts]]
 source = "lenslocked_storage"
 destination = "/data/storage"
+processes = ["app"]
 
 [http_service]
 internal_port = 3000
