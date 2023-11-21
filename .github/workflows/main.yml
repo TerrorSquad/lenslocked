@@ -8,5 +8,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: 'Create env file'
+        run: |
+          echo "SERVER_PORT=3000" >> .env && \
+          echo "SERVER_ADDRESS=0.0.0.0" >> .env && \
+          
+          echo "SMTP_HOST=smtp.mailtrap.io" >> .env && \
+          echo "SMTP_PORT=2525" >> .env && \
+          echo "SMTP_USERNAME=" >> .env && \
+          echo "SMTP_PASSWORD=" >> .env && \
+          
+          echo "CSRF_KEY=" >> .env && \
+          echo "CSRF_SECURE=true" >> .env && \
+          
+          echo "PSQL_HOST=" >> .env && \
+          echo "PSQL_PORT=" >> .env && \
+          echo "PSQL_DATABASE=" >> .env && \
+          echo "PSQL_USER=" >> .env && \
+          echo "PSQL_PASSWORD=" >> .env && \
+          echo "PSQL_SSLMODE=" >> .env;
+
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy
+                - run: flyctl deploy
