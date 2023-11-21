@@ -2,7 +2,7 @@ name: Fly Deploy
 on:
   pull_request:
     branches:
-      - master
+      - main
 env:
   FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 jobs:
