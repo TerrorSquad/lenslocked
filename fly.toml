@@ -15,7 +15,7 @@ PSQL_HOST = "snowy-wind-2243.internal"
 
 [mounts]
 source = "lenslocked_storage"
-destination = "/app/storage"
+destination = "/data/storage"
 
 [http_service]
 internal_port = 3000
