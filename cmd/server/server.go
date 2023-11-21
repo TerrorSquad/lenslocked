@@ -70,16 +70,22 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	err = run(cfg)
+	if err != nil {
+		panic(err)
+	}
+}
+func run(cfg config) error {
 	// Set up database connection
 	db, err := models.Open(cfg.PSQL)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer db.Close()
 
 	err = models.MigrateFS(db, migrations.FS, ".")
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Setup services
@@ -189,5 +195,5 @@ func main() {
 
 	fmt.Println("Server is running on port: " + cfg.Server.Port)
 	log.Println("Server is running on port: " + cfg.Server.Port)
-	log.Fatal(http.ListenAndServe(cfg.Server.Address+":"+cfg.Server.Port, router))
+	return http.ListenAndServe(cfg.Server.Address+":"+cfg.Server.Port, router)
 }
