@@ -1,6 +1,19 @@
 version: '3.9'
 
 services:
+
+  caddy:
+    hostname: caddy
+    image: caddy
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    depends_on:
+      - server
+
   server:
     build:
       context: .
@@ -8,8 +21,5 @@ services:
     restart: always
     volumes:
       - ./images/:/app/images/
-    #        TODO: remove ports before deploying
-    ports:
-      - "3000:3000"
     depends_on:
       - db
