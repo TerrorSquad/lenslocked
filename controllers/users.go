@@ -53,7 +53,7 @@ func (controller Users) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	setCookie(w, CookieSession, session.Token)
-	http.Redirect(w, r, "/users/me", http.StatusFound)
+	http.Redirect(w, r, "/galleries/", http.StatusFound)
 	fmt.Fprintf(w, "User created: %+v", user)
 }
 
@@ -81,7 +81,7 @@ func (controller Users) ProcessSignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	setCookie(w, CookieSession, session.Token)
-	http.Redirect(w, r, "/users/me", http.StatusFound)
+	http.Redirect(w, r, "/galleries", http.StatusFound)
 }
 
 func (controller Users) ProcessSignOut(w http.ResponseWriter, r *http.Request) {
@@ -104,6 +104,7 @@ func (controller Users) ProcessSignOut(w http.ResponseWriter, r *http.Request) {
 func (controller Users) CurrentUser(w http.ResponseWriter, r *http.Request) {
 	user := context.User(r.Context())
 	fmt.Fprintf(w, "User: %s\n", user.Email)
+	// TODO: Render a template with the user's information
 }
 
 func (controller Users) ForgotPassword(w http.ResponseWriter, r *http.Request) {
@@ -180,5 +181,5 @@ func (controller Users) ProcessResetPassword(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	setCookie(w, CookieSession, session.Token)
-	http.Redirect(w, r, "/users/me", http.StatusFound)
+	http.Redirect(w, r, "/galleries", http.StatusFound)
 }
