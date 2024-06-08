@@ -22,7 +22,7 @@ func FAQ(tpl Template) http.HandlerFunc {
 		},
 		{
 			Question: "Who made this?",
-			Answer:   "This was built by Jon Calhoun for his upcoming book on web development in Go.",
+			Answer:   "This was built by Goran Ninkovic - Senior Full Stack developer.",
 		},
 		{
 			Question: "How was this made?",
@@ -30,7 +30,7 @@ func FAQ(tpl Template) http.HandlerFunc {
 		},
 		{
 			Question: "Can I help?",
-			Answer:   "Not yet, but <i>soon</i>. Follow @joncalhoun on Twitter for more updates.",
+			Answer:   "Not yet, but <i>soon</i>.",
 		},
 	}
 
